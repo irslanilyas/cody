@@ -1,3 +1,4 @@
+// src/components/Dashboard.tsx
 import React from "react";
 import IssueList from "./IssueList";
 import ScanButton from "./ScanButton";
@@ -11,6 +12,7 @@ interface DashboardProps {
   onScan: () => void;
   onFilterChange: (category: "severity" | "type", name: string, value: boolean) => void;
   onGenerateReport: () => void;
+  canScan?: boolean;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
@@ -19,7 +21,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   filters,
   onScan,
   onFilterChange,
-  onGenerateReport
+  onGenerateReport,
+  canScan = true
 }) => {
   // Count issues by severity
   const criticalCount = issues.filter(issue => issue.severity === "critical").length;
@@ -29,7 +32,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="dashboard">
       <div className="scan-controls">
-        <ScanButton onScan={onScan} isScanning={isScanning} />
+        <ScanButton onScan={onScan} isScanning={isScanning} disabled={!canScan} />
         
         {issues.length > 0 && (
           <button className="report-button" onClick={onGenerateReport}>
@@ -62,7 +65,11 @@ const Dashboard: React.FC<DashboardProps> = ({
         />
       )}
       
-      <IssueList issues={issues} isLoading={isScanning} />
+      <IssueList 
+        issues={issues} 
+        isLoading={isScanning} 
+        nodesAccessible={canScan}
+      />
     </div>
   );
 };

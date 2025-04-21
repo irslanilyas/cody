@@ -1,27 +1,42 @@
+// src/main.tsx
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { framer } from "framer-plugin";
 import App from "./App";
 import "./App.css";
 
+// Define interfaces for the ErrorBoundary component
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
 // Simple error boundary component
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean; error: Error | null }
-> {
-  constructor(props: { children: React.ReactNode }) {
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { 
+      hasError: false, 
+      error: null 
+    };
   }
 
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { 
+      hasError: true, 
+      error 
+    };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
     safeConsoleLog("Error caught by boundary:", error, errorInfo);
   }
 
-  render() {
+  render(): React.ReactNode {
     if (this.state.hasError) {
       return (
         <div className="error-container">
@@ -42,7 +57,7 @@ class ErrorBoundary extends React.Component<
 }
 
 // Wrap console.log to avoid potential issues
-const safeConsoleLog = (...args: any[]) => {
+const safeConsoleLog = (...args: any[]): void => {
   try {
     console.log(...args);
   } catch (e) {
@@ -53,6 +68,13 @@ const safeConsoleLog = (...args: any[]) => {
 // Safe error handling
 try {
   safeConsoleLog("Accessibility Checker plugin initializing...");
+  
+  // Show the UI with appropriate size and position
+  framer.showUI({ 
+    width: 480, 
+    height: 640,
+    position: "center" // Using a valid position value
+  });
   
   // Create a root element for the plugin UI
   const rootElement = document.getElementById("root");
