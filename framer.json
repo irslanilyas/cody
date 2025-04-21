@@ -1,8 +1,43 @@
 {
-  "id": "b9d436",
-  "name": "Cody",
-  "modes": [
+  "$schema": "https://framerusercontent.com/modules/framer.js/schema",
+  "id": "a11yck",
+  "name": "Accessibility Checker",
+  "version": "1.0.0",
+  "description": "Scan and fix accessibility issues in your Framer designs",
+  "modes": ["canvas"],
+  "icon": "🔍",
+  "ui": {
+    "extendsPage": true,
+    "relativeTo": "document",
+    "preferredSize": {
+      "width": 480,
+      "height": 640
+    }
+  },
+  "license": "MIT",
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "wcag",
+    "contrast",
+    "audit"
+  ],
+  "categories": [
+    "accessibility",
+    "design"
+  ],
+  "permissions": [
+    "selection",
+    "nodes",
     "canvas"
   ],
-  "icon": "/icon.svg"
+  "author": {
+    "name": "Your Name",
+    "email": "your.email@example.com"
+  },
+  "npm": {
+    "dependencies": {
+      "uuid": "^8.3.2"
+    }
+  }
 }
