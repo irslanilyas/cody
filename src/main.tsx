@@ -72,7 +72,7 @@ try {
   // Show the UI with appropriate size and position
   framer.showUI({ 
     width: 480, 
-    height: 640,
+    height: 480,
     position: "center" // Using a valid position value
   });
   

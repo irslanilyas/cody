@@ -1,4 +1,262 @@
-/* Add these to App.css */
+:root {
+  --background-color: #ffffff;
+  --text-color: #000000;
+  --primary-color: #0099ff;
+  --secondary-color: #6c757d;
+  --critical-color: #dc3545;
+  --warning-color: #ffc107;
+  --info-color: #0dcaf0;
+  --success-color: #198754;
+  --border-color: #dee2e6;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-framer-theme="dark"] {
+  --background-color: #1a1a1a;
+  --text-color: #ffffff;
+  --border-color: #333333;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  line-height: 1.5;
+  padding: 16px;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.app-header {
+  margin-bottom: 16px;
+}
+
+.app-header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-color);
+}
+
+.app-header p {
+  font-size: 14px;
+  color: var(--secondary-color);
+}
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.scan-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: var(--background-color);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px var(--shadow-color);
+  border: 1px solid var(--border-color);
+}
+
+.scan-button {
+  padding: 8px 16px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.scan-button:hover {
+  background-color: #0077cc;
+}
+
+.scan-button:disabled {
+  background-color: var(--secondary-color);
+  cursor: not-allowed;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 16px;
+  padding: 12px;
+  background-color: var(--background-color);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px var(--shadow-color);
+  border: 1px solid var(--border-color);
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-group-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-color);
+}
+
+.filter-options {
+  display: flex;
+  gap: 12px;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.issue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.issue-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background-color: var(--background-color);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px var(--shadow-color);
+  border: 1px solid var(--border-color);
+}
+
+.issue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.issue-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+.issue-severity {
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.issue-severity.critical {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: var(--critical-color);
+}
+
+.issue-severity.warning {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: var(--warning-color);
+}
+
+.issue-severity.info {
+  background-color: rgba(13, 202, 240, 0.1);
+  color: var(--info-color);
+}
+
+.issue-description {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: var(--text-color);
+}
+
+.issue-location {
+  font-size: 12px;
+  color: var(--secondary-color);
+  margin-bottom: 8px;
+}
+
+.issue-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.fix-button, .info-button, .expand-button, .locate-button {
+  padding: 4px 8px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.info-button {
+  background-color: var(--info-color);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  text-align: center;
+  color: var(--secondary-color);
+  background-color: var(--background-color);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-state-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-color);
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+.loading-spinner::after {
+  content: "";
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spinner 0.8s linear infinite;
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .error-message {
   background-color: #fee2e2;
   color: #b91c1c;
@@ -22,9 +280,10 @@
   justify-content: space-between;
   margin-bottom: 16px;
   padding: 12px;
-  background-color: white;
+  background-color: var(--background-color);
   border-radius: 6px;
   box-shadow: 0 2px 4px var(--shadow-color);
+  border: 1px solid var(--border-color);
 }
 
 .summary-item {
@@ -50,6 +309,7 @@
 .summary-count {
   font-size: 24px;
   font-weight: bold;
+  color: var(--text-color);
 }
 
 .summary-label {
@@ -67,4 +327,14 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+.report-button {
+  padding: 8px 16px;
+  background-color: var(--success-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
 }

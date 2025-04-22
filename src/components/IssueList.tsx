@@ -34,7 +34,6 @@ const IssueList: React.FC<IssueListProps> = ({ issues, isLoading, nodesAccessibl
     return (
       <div className="empty-state">
         <div className="empty-state-icon">🔍</div>
-        <h3 className="empty-state-title">No accessibility issues found</h3>
         <p className="empty-state-description">
           {issues.length === 0
             ? "Click the 'Scan' button to analyze your design for accessibility issues."
