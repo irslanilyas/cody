@@ -1,4 +1,6 @@
+// src/components/IssueItem.tsx
 import React, { useState } from "react";
+import { framer } from "framer-plugin";
 import { Issue } from "../types/issueTypes";
 
 interface IssueItemProps {
@@ -8,6 +10,7 @@ interface IssueItemProps {
 const IssueItem: React.FC<IssueItemProps> = ({ issue }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFixing, setIsFixing] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
 
   const handleFix = async (fixIndex: number) => {
     setIsFixing(true);
@@ -17,6 +20,41 @@ const IssueItem: React.FC<IssueItemProps> = ({ issue }) => {
       console.error("Error applying fix:", error);
     } finally {
       setIsFixing(false);
+    }
+  };
+
+  const handleLocate = async () => {
+    try {
+      setIsLocating(true);
+      
+      const nodeId = issue.location.nodeId;
+      
+      if (!nodeId) {
+        console.error("No node ID available for this issue");
+        return;
+      }
+      
+      // First just set the selection
+      await framer.setSelection([nodeId]);
+      
+      // Delay the zoom to create a visual separation between selection and zoom
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Then zoom, possibly with custom options if supported
+      try {
+        // Try with options first (this is speculative based on your description)
+        await (framer as any).zoomIntoView(nodeId, {
+          zoom: 0.1,  // Less zoom (0.0-1.0 range)
+          duration: 800  // Slower animation in milliseconds
+        });
+      } catch (e) {
+        // Fall back to standard zoom if options aren't supported
+        await (framer as any).zoomIntoView(nodeId);
+      }
+    } catch (error) {
+      console.error("Error locating node:", error);
+    } finally {
+      setIsLocating(false);
     }
   };
 
@@ -101,8 +139,12 @@ const IssueItem: React.FC<IssueItemProps> = ({ issue }) => {
           {isExpanded ? "Hide Details" : "Show Details"}
         </button>
         
-        <button className="locate-button">
-          Locate
+        <button 
+          className="locate-button"
+          onClick={handleLocate}
+          disabled={isLocating}
+        >
+          {isLocating ? "Locating..." : "Locate"}
         </button>
       </div>
     </div>

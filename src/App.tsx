@@ -16,8 +16,8 @@ function usePermissions() {
     const checkPermissions = async () => {
       try {
         // If isAllowedTo exists, use it to check permissions
-        if (typeof framer.isAllowedTo === 'function') {
-          const hasNodePermission = await framer.isAllowedTo('getNodesWithType');
+        if (typeof (framer as any).isAllowedTo === 'function') {
+          const hasNodePermission = await (framer as any).isAllowedTo('getNodesWithType');
           setCanAccessNodes(hasNodePermission);
         }
       } catch (error) {
@@ -30,8 +30,8 @@ function usePermissions() {
     checkPermissions();
     
     // Subscribe to permission changes if the API exists
-    if (typeof framer.subscribeToIsAllowedTo === 'function') {
-      const unsubscribe = framer.subscribeToIsAllowedTo('getNodesWithType', setCanAccessNodes);
+    if (typeof (framer as any).subscribeToIsAllowedTo === 'function') {
+      const unsubscribe = (framer as any).subscribeToIsAllowedTo('getNodesWithType', setCanAccessNodes);
       return () => {
         if (unsubscribe) unsubscribe();
       };

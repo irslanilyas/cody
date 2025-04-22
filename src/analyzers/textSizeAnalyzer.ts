@@ -3,7 +3,8 @@ import { isTextNode } from "framer-plugin";
 
 // Constants for text size requirements
 const MIN_BODY_TEXT_SIZE = 12; // Minimum size for body text in pixels
-const MIN_LINE_HEIGHT_RATIO = 1.5; // Minimum line height as a ratio of font size
+// Remove the line height constant
+// const MIN_LINE_HEIGHT_RATIO = 1.5; // Minimum line height as a ratio of font size
 
 // Simple UUID generation function
 function generateUUID(): string {
@@ -15,7 +16,7 @@ function generateUUID(): string {
 }
 
 /**
- * Analyzes text nodes for proper size and line height
+ * Analyzes text nodes for proper size
  * @param nodes Array of nodes from the Framer project
  * @returns Array of text size-related accessibility issues
  */
@@ -30,13 +31,6 @@ export async function analyzeTextSize(nodes: any[]): Promise<Issue[]> {
       // Get text size using Framer API
       // Since we can't directly access these properties, use default values for demonstration
       let fontSize = 16; // Default
-      let lineHeight = fontSize; // Default, assume 1:1 ratio initially
-
-      // In a real implementation, you would try to access these properties
-      // through the correct API methods or properties
-      
-      // Calculate line height ratio
-      const lineHeightRatio = lineHeight / fontSize;
 
       // Check text size
       if (fontSize < MIN_BODY_TEXT_SIZE) {
@@ -71,39 +65,15 @@ export async function analyzeTextSize(nodes: any[]): Promise<Issue[]> {
         });
       }
 
+      // Remove the line height check
+      /*
       // Check line height
       if (lineHeightRatio < MIN_LINE_HEIGHT_RATIO) {
         issues.push({
-          id: generateUUID(),
-          type: "textSize",
-          severity: "info",
-          title: "Insufficient Line Height",
-          description: `This text has a line height ratio of ${lineHeightRatio.toFixed(2)}, which is below the recommended minimum of ${MIN_LINE_HEIGHT_RATIO} for good readability.`,
-          wcagGuideline: "WCAG 2.1 AAA - 1.4.8 Visual Presentation",
-          wcagLink: "https://www.w3.org/WAI/WCAG21/Understanding/visual-presentation.html",
-          location: {
-            nodeId: textNode.id,
-            nodeName: textNode.name || "Text Element",
-            nodePath: textNode.id
-          },
-          currentValue: `${lineHeightRatio.toFixed(2)}x`,
-          requiredValue: `${MIN_LINE_HEIGHT_RATIO}x minimum`,
-          fixSuggestions: [
-            {
-              description: `Increase line height to at least ${MIN_LINE_HEIGHT_RATIO}x font size`,
-              action: async () => {
-                try {
-                  const newLineHeight = fontSize * MIN_LINE_HEIGHT_RATIO;
-                  // Log what we would do since we don't know the correct property
-                  console.log(`Would increase line height to ${newLineHeight}px`);
-                } catch (error) {
-                  console.error("Error setting line height:", error);
-                }
-              }
-            }
-          ]
+          // Line height issue code here
         });
       }
+      */
       
       // Check if text is fully uppercase
       let text: string | null = null; // Declare with correct type that accepts null

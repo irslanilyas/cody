@@ -66,20 +66,22 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px;
+  padding: 16px;
   background-color: var(--background-color);
   border-radius: 6px;
   box-shadow: 0 2px 4px var(--shadow-color);
   border: 1px solid var(--border-color);
+  margin-bottom: 16px;
 }
 
 .scan-button {
-  padding: 8px 16px;
+  padding: 10px 18px;
   background-color: var(--primary-color);
   color: white;
   border: none;
   border-radius: 4px;
   font-weight: 500;
+  font-size: 14px;
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -94,51 +96,86 @@ body {
 }
 
 .filter-controls {
-  display: flex;
-  gap: 16px;
-  padding: 12px;
   background-color: var(--background-color);
   border-radius: 6px;
   box-shadow: 0 2px 4px var(--shadow-color);
   border: 1px solid var(--border-color);
+  padding: 16px;
+  margin-bottom: 16px;
 }
 
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+}
+
+.filter-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-group-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-color);
+}
+
+.filter-options-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filter-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.filter-option input[type="checkbox"] {
+  margin-right: 8px;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.filter-label {
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+/* Keep the original filter styles for backward compatibility */
 .filter-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.filter-group-title {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: var(--text-color);
-}
-
 .filter-options {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
-}
-
-.filter-option {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  color: var(--text-color);
 }
 
 .issue-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .issue-item {
   display: flex;
   flex-direction: column;
-  padding: 12px;
+  padding: 16px;
   background-color: var(--background-color);
   border-radius: 6px;
   box-shadow: 0 2px 4px var(--shadow-color);
@@ -149,7 +186,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .issue-title {
@@ -159,7 +196,7 @@ body {
 }
 
 .issue-severity {
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 500;
@@ -182,33 +219,46 @@ body {
 
 .issue-description {
   font-size: 14px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   color: var(--text-color);
 }
 
 .issue-location {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--secondary-color);
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  padding: 8px;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
 }
 
 .issue-actions {
   display: flex;
   gap: 8px;
+  margin-top: 8px;
 }
 
 .fix-button, .info-button, .expand-button, .locate-button {
-  padding: 4px 8px;
+  padding: 6px 12px;
   background-color: var(--primary-color);
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.fix-button:hover, .expand-button:hover, .locate-button:hover {
+  background-color: #0077cc;
 }
 
 .info-button {
   background-color: var(--info-color);
+}
+
+.info-button:hover {
+  background-color: #0bacce;
 }
 
 .empty-state {
@@ -276,22 +326,20 @@ body {
 }
 
 .issues-summary {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
   margin-bottom: 16px;
-  padding: 12px;
-  background-color: var(--background-color);
-  border-radius: 6px;
-  box-shadow: 0 2px 4px var(--shadow-color);
-  border: 1px solid var(--border-color);
 }
 
 .summary-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px 16px;
-  border-radius: 4px;
+  justify-content: center;
+  padding: 16px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px var(--shadow-color);
 }
 
 .summary-item.critical {
@@ -307,14 +355,15 @@ body {
 }
 
 .summary-count {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
   color: var(--text-color);
 }
 
 .summary-label {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--secondary-color);
+  margin-top: 4px;
 }
 
 .sr-only {
@@ -330,11 +379,117 @@ body {
 }
 
 .report-button {
-  padding: 8px 16px;
+  padding: 10px 18px;
   background-color: var(--success-color);
   color: white;
   border: none;
   border-radius: 4px;
   font-weight: 500;
+  font-size: 14px;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.report-button:hover {
+  background-color: #157347;
+}
+
+/* Added styles for issue details */
+.issue-details {
+  border-top: 1px solid var(--border-color);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.issue-values {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.current-value, .required-value {
+  background-color: rgba(0, 0, 0, 0.03);
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.issue-guideline {
+  margin-bottom: 12px;
+  background-color: rgba(13, 202, 240, 0.05);
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.guideline-label {
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.guideline-link {
+  margin-left: 8px;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.guideline-link:hover {
+  text-decoration: underline;
+}
+
+.fix-suggestions {
+  margin-top: 12px;
+}
+
+.fix-title {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.fix-list {
+  list-style: none;
+}
+
+.fix-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.02);
+  margin-bottom: 8px;
+}
+
+.fix-description {
+  font-size: 13px;
+}
+
+/* Add to App.css */
+.locate-button.locating {
+  background-color: var(--secondary-color);
+  position: relative;
+}
+
+.locate-button.locating::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.8);
+  animation: pulse 2s infinite;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+@keyframes pulse {
+  0% {
+    transform: translateY(-50%) scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-50%) scale(1.2);
+    opacity: 0;
+  }
 }
