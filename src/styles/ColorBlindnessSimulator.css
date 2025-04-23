@@ -1,0 +1,124 @@
+/* src/styles/ColorBlindnessSimulator.css */
+.simulator-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .simulator-modal-content {
+    background-color: var(--background-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .simulator-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .simulator-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--text-color);
+  }
+  
+  .simulator-close-button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--secondary-color);
+  }
+  
+  .simulator-options {
+    display: flex;
+    padding: 16px;
+    gap: 12px;
+    border-bottom: 1px solid var(--border-color);
+    overflow-x: auto;
+  }
+  
+  .simulator-option {
+    padding: 8px 16px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-color);
+    white-space: nowrap;
+  }
+  
+  .simulator-option.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+  
+  .simulator-description {
+    padding: 0 16px 16px;
+    color: var(--secondary-color);
+    font-size: 14px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .simulator-image-container {
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+  }
+  
+  .simulator-image {
+    max-width: 100%;
+    max-height: 500px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+  }
+  
+  .simulator-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+  }
+  
+  .placeholder-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 200px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    color: var(--secondary-color);
+  }
+  
+  .simulator-info {
+    padding: 16px;
+    font-size: 14px;
+    color: var(--secondary-color);
+    background-color: rgba(0, 0, 0, 0.02);
+    border-top: 1px solid var(--border-color);
+  }
+  
+  .simulator-info strong {
+    color: var(--text-color);
+  }

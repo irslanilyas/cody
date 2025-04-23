@@ -2,9 +2,13 @@
 import React, { useState, useEffect } from "react";
 import { framer, isFrameNode } from "framer-plugin";
 import Dashboard from "./components/Dashboard";
+import ReportModal from "./components/ReportModal"; // Import the report modal
+import ColorBlindnessSimulator from "./components/ColorBlindnessSimulator"; // Import the simulator
 import { Issue } from "./types/issueTypes";
 import { runAccessibilityCheck } from "./analyzers/accessibilityScanner";
 import "./App.css";
+import "./styles/ReportModal.css";
+import "./styles/ColorBlindnessSimulator.css";
 import "./types/framerTypes"; // Import the type extensions
 
 // Create a custom hook to check for permissions
@@ -54,6 +58,9 @@ const App: React.FC = () => {
     issuesFound: 0
   });
   const [isScanComplete, setIsScanComplete] = useState(false);
+  // Add state for the modals
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showSimulator, setShowSimulator] = useState(false);
   
   const [filters, setFilters] = useState({
     severity: {
@@ -281,9 +288,13 @@ const App: React.FC = () => {
 
   // Generate accessibility report
   const handleGenerateReport = () => {
-    // Implementation for generating and exporting reports
-    console.log("Generating report for", issues.length, "issues");
-    // We'll implement this later with the reportGenerator utility
+    if (issues.length === 0) {
+      setError("No accessibility issues to include in the report. Run a scan first.");
+      return;
+    }
+    
+    // Show the report modal
+    setShowReportModal(true);
   };
 
   return (
@@ -337,8 +348,24 @@ const App: React.FC = () => {
         onFilterChange={handleFilterChange}
         filters={filters}
         onGenerateReport={handleGenerateReport}
+        onOpenSimulator={() => setShowSimulator(true)}
         canScan={canAccessNodes}
       />
+      
+      {/* Render the report modal when showReportModal is true */}
+      {showReportModal && (
+        <ReportModal 
+          issues={issues}
+          onClose={() => setShowReportModal(false)}
+        />
+      )}
+      
+      {/* Render the color blindness simulator when showSimulator is true */}
+      {showSimulator && (
+        <ColorBlindnessSimulator 
+          onClose={() => setShowSimulator(false)}
+        />
+      )}
     </div>
   );
 };

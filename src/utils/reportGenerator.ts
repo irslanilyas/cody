@@ -1,4 +1,28 @@
 import { Issue, IssueSeverity, IssueType } from "../types/issueTypes";
+import { framer } from "framer-plugin";
+
+/**
+ * Attempts to capture a screenshot of a node
+ * @param nodeId ID of the node to capture
+ * @returns Promise<string | null> Base64 encoded screenshot or null if not possible
+ */
+export async function captureNodeScreenshot(nodeId: string): Promise<string | null> {
+  try {
+    // First, select and zoom to the node to prepare for screenshot
+    await framer.setSelection([nodeId]);
+    await (framer as any).zoomIntoView(nodeId);
+    
+    // Wait for zoom animation to complete
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // In a real implementation, we would capture the screenshot here
+    // For now, we return null since we don't have direct access to screenshot functionality
+    return null;
+  } catch (error) {
+    console.error("Error capturing node screenshot:", error);
+    return null;
+  }
+}
 
 /**
  * Generates an HTML accessibility report from issues
@@ -210,6 +234,102 @@ export function generateHtmlReport(issues: Issue[]): string {
       text-align: center;
       color: #2f855a;
     }
+    .chart-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      gap: 20px;
+    }
+    .chart {
+      flex: 1;
+      min-height: 200px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .chart-header {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .bar-chart {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      justify-content: flex-end;
+    }
+    .bar-container {
+      display: flex;
+      align-items: flex-end;
+      height: 200px;
+      gap: 15px;
+    }
+    .bar-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-grow: 1;
+    }
+    .bar {
+      width: 40px;
+      background-color: #3182ce;
+      margin-bottom: 10px;
+      border-radius: 4px 4px 0 0;
+    }
+    .bar.critical {
+      background-color: #e53e3e;
+    }
+    .bar.warning {
+      background-color: #dd6b20;
+    }
+    .bar.info {
+      background-color: #3182ce;
+    }
+    .bar-label {
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+    }
+    .table-of-contents {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+    .toc-title {
+      font-size: 18px;
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+    .toc-list {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    .toc-item {
+      margin-bottom: 8px;
+    }
+    .toc-link {
+      color: #3182ce;
+      text-decoration: none;
+    }
+    .toc-link:hover {
+      text-decoration: underline;
+    }
+    @media print {
+      body {
+        font-size: 12px;
+      }
+      .chart-container {
+        page-break-inside: avoid;
+      }
+      .issue-card {
+        page-break-inside: avoid;
+      }
+    }
   </style>
 </head>
 <body>
@@ -268,16 +388,65 @@ export function generateHtmlReport(issues: Issue[]): string {
     </div>
   </div>
   
+  <!-- Add bar charts for visual representation -->
+  <div class="chart-container">
+    <div class="chart">
+      <h3 class="chart-header">Issues by Severity</h3>
+      <div class="bar-container">
+        <div class="bar-group">
+          <div class="bar critical" style="height: ${criticalCount > 0 ? Math.min(200, criticalCount * 20) : 0}px;"></div>
+          <div class="bar-label">Critical<br>${criticalCount}</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar warning" style="height: ${warningCount > 0 ? Math.min(200, warningCount * 20) : 0}px;"></div>
+          <div class="bar-label">Warning<br>${warningCount}</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar info" style="height: ${infoCount > 0 ? Math.min(200, infoCount * 20) : 0}px;"></div>
+          <div class="bar-label">Info<br>${infoCount}</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="chart">
+      <h3 class="chart-header">Issues by Type</h3>
+      <div class="bar-container">
+        ${Object.entries(countByType).map(([type, count]) => `
+          <div class="bar-group">
+            <div class="bar" style="height: ${count > 0 ? Math.min(200, count * 20) : 0}px;"></div>
+            <div class="bar-label">${formatIssueType(type as IssueType)}<br>${count}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  </div>
+  
+  <!-- Table of contents -->
+  ${issues.length > 0 ? `
+    <div class="table-of-contents">
+      <h3 class="toc-title">Table of Contents</h3>
+      <ol class="toc-list">
+        ${issues.map((issue, index) => `
+          <li class="toc-item">
+            <a href="#issue-${issue.id}" class="toc-link">
+              ${index + 1}. ${issue.title} (${formatIssueType(issue.type)}, ${issue.severity})
+            </a>
+          </li>
+        `).join('')}
+      </ol>
+    </div>
+  ` : ''}
+  
   <div class="issues-section">
     <h2>Detailed Issues</h2>
     
     ${issues.length === 0 ? 
       '<div class="no-issues"><h3>No accessibility issues found!</h3><p>Great job on creating an accessible design.</p></div>' :
-      issues.map(issue => `
-        <div class="issue-card">
+      issues.map((issue, index) => `
+        <div id="issue-${issue.id}" class="issue-card">
           <div class="issue-header">
             <div>
-              <h3 class="issue-title">${issue.title}</h3>
+              <h3 class="issue-title">${index + 1}. ${issue.title}</h3>
               <span class="issue-type">${formatIssueType(issue.type)}</span>
             </div>
             <span class="issue-severity ${issue.severity}">${issue.severity}</span>

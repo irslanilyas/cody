@@ -1,0 +1,150 @@
+/* src/styles/ReportModal.css */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background-color: var(--background-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--text-color);
+  }
+  
+  .close-button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--secondary-color);
+  }
+  
+  .close-button:hover {
+    color: var(--text-color);
+  }
+  
+  .modal-body {
+    padding: 16px;
+    flex-grow: 1;
+  }
+  
+  .format-options {
+    margin-top: 16px;
+  }
+  
+  .format-options h4 {
+    margin-bottom: 12px;
+    font-size: 16px;
+    color: var(--text-color);
+  }
+  
+  .format-option {
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0.02);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    position: relative;
+    border: 1px solid var(--border-color);
+  }
+  
+  .format-option input[type="radio"] {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+  }
+  
+  .format-label {
+    font-weight: 600;
+    margin-left: 28px;
+    color: var(--text-color);
+  }
+  
+  .format-description {
+    margin: 8px 0 0 28px;
+    font-size: 14px;
+    color: var(--secondary-color);
+  }
+  
+  .format-option:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px;
+    border-top: 1px solid var(--border-color);
+    gap: 12px;
+  }
+  
+  .cancel-button {
+    padding: 8px 16px;
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-color);
+    cursor: pointer;
+  }
+  
+  .cancel-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  
+  .export-button {
+    padding: 8px 16px;
+    background-color: var(--success-color);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  .export-button:hover {
+    background-color: #157347;
+  }
+  
+  .export-button:disabled,
+  .cancel-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .error-message {
+    margin-top: 16px;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 4px solid #b91c1c;
+  }
