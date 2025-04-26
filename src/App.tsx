@@ -2,43 +2,37 @@
 import React, { useState, useEffect } from "react";
 import { framer, isFrameNode } from "framer-plugin";
 import Dashboard from "./components/Dashboard";
-import ReportModal from "./components/ReportModal"; // Import the report modal
-import ColorBlindnessSimulator from "./components/ColorBlindnessSimulator"; // Import the simulator
+import ReportModal from "./components/ReportModal";
+import ColorBlindnessSimulator from "./components/ColorBlindnessSimulator";
 import { Issue } from "./types/issueTypes";
 import { runAccessibilityCheck } from "./analyzers/accessibilityScanner";
 import "./App.css";
 import "./styles/ReportModal.css";
 import "./styles/ColorBlindnessSimulator.css";
-import "./types/framerTypes"; // Import the type extensions
+import "./types/framerTypes";
 
-// Create a custom hook to check for permissions
+// Custom hook to check for permissions
 function usePermissions() {
   const [canAccessNodes, setCanAccessNodes] = useState<boolean>(true);
   
   useEffect(() => {
-    // Check if we can access nodes using the new permissions API
     const checkPermissions = async () => {
       try {
-        // If isAllowedTo exists, use it to check permissions
         if (typeof (framer as any).isAllowedTo === 'function') {
           const hasNodePermission = await (framer as any).isAllowedTo('getNodesWithType');
           setCanAccessNodes(hasNodePermission);
         }
       } catch (error) {
         console.error("Error checking permissions:", error);
-        // Default to true if we can't check (older versions of Framer)
         setCanAccessNodes(true);
       }
     };
     
     checkPermissions();
     
-    // Subscribe to permission changes if the API exists
     if (typeof (framer as any).subscribeToIsAllowedTo === 'function') {
       const unsubscribe = (framer as any).subscribeToIsAllowedTo('getNodesWithType', setCanAccessNodes);
-      return () => {
-        if (unsubscribe) unsubscribe();
-      };
+      return () => unsubscribe && unsubscribe();
     }
   }, []);
   
@@ -46,24 +40,23 @@ function usePermissions() {
 }
 
 const App: React.FC = () => {
+  // State
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [issues, setIssues] = useState<Issue[]>([]);
   const [filteredIssues, setFilteredIssues] = useState<Issue[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const canAccessNodes = usePermissions();
   const [scanProgress, setScanProgress] = useState({
     currentPage: 0,
     totalPages: 0,
     nodesScanned: 0,
     issuesFound: 0
   });
-  const [isScanComplete, setIsScanComplete] = useState(false);
-  // Add state for the modals
   const [showReportModal, setShowReportModal] = useState(false);
   const [showSimulator, setShowSimulator] = useState(false);
-  // Add state for free scan count
   const [freeScanCount, setFreeScanCount] = useState<number>(2);
   const [totalScans] = useState<number>(3);
+  
+  const canAccessNodes = usePermissions();
   
   const [filters, setFilters] = useState({
     severity: {
@@ -84,37 +77,30 @@ const App: React.FC = () => {
   // Apply filters to issues
   useEffect(() => {
     const filtered = issues.filter((issue) => {
-      const severityMatch = filters.severity[issue.severity];
-      const typeMatch = filters.type[issue.type];
-      return severityMatch && typeMatch;
+      return filters.severity[issue.severity] && filters.type[issue.type];
     });
     setFilteredIssues(filtered);
   }, [issues, filters]);
 
-  // Separate function to perform the scan with progress updates
+  // Perform scan
   const performScan = async () => {
-    // Reset progress and issues
+    // Reset state
     setScanProgress({
       currentPage: 0,
       totalPages: 0,
       nodesScanned: 0,
       issuesFound: 0
     });
-    setIsScanComplete(false);
     setIssues([]);
     
     try {
-      // Try to get root canvas and its top-level frames that may represent pages
+      // Get pages/frames
       let pages: any[] = [];
       try {
-        // Get the canvas root first
         const canvasRoot = await framer.getCanvasRoot();
         if (canvasRoot) {
-          // Get direct children of the canvas
           const rootChildren = await canvasRoot.getChildren();
-          // Filter for frame nodes that are likely pages/screens
           pages = rootChildren.filter(node => isFrameNode(node));
-          console.log(`Found ${pages.length} top-level frames that could be pages`);
         }
         
         setScanProgress(prev => ({ ...prev, totalPages: pages.length || 1 }));
@@ -123,64 +109,45 @@ const App: React.FC = () => {
         pages = [];
       }
       
-      // If we have pages, process each one separately
+      // Process each page or scan entire project
       if (pages.length > 0) {
         for (let i = 0; i < pages.length; i++) {
           const page = pages[i];
-          setScanProgress(prev => ({ 
-            ...prev, 
-            currentPage: i + 1 
-          }));
+          setScanProgress(prev => ({ ...prev, currentPage: i + 1 }));
           
-          console.log(`Scanning frame ${i + 1} of ${pages.length}: ${page.name || 'Unnamed frame'}`);
-          
-          // Get nodes for the current page
-          let frameNodes: any[] = [];
+          // Get nodes
+          let frameNodes = [page];
           let textNodes: any[] = [];
           
           try {
-            // Get descendant frame nodes for this container
             const pageFrameNodes = await page.getNodesWithType("FrameNode");
-            frameNodes = [page, ...pageFrameNodes]; // Include the page frame itself
-            console.log(`Found ${pageFrameNodes.length + 1} frame nodes in container ${i + 1}`);
+            frameNodes = [page, ...pageFrameNodes];
           } catch (e) {
-            console.error(`Error getting frame nodes for container ${i + 1}:`, e);
-            frameNodes = [page]; // At least include the page frame itself
+            console.error(`Error getting frame nodes for page ${i + 1}:`, e);
           }
           
           try {
-            // Get text nodes within this container
-            const pageTextNodes = await page.getNodesWithType("TextNode");
-            textNodes = pageTextNodes;
-            console.log(`Found ${pageTextNodes.length} text nodes in container ${i + 1}`);
+            textNodes = await page.getNodesWithType("TextNode");
           } catch (e) {
-            console.error(`Error getting text nodes for container ${i + 1}:`, e);
+            console.error(`Error getting text nodes for page ${i + 1}:`, e);
           }
           
-          // Process current page's nodes
+          // Process nodes
           const pageNodes = [...frameNodes, ...textNodes];
           setScanProgress(prev => ({ 
             ...prev, 
             nodesScanned: prev.nodesScanned + pageNodes.length 
           }));
           
-          if (pageNodes.length === 0) {
-            console.log(`No nodes found in container ${i + 1}`);
-            continue;
-          }
+          if (pageNodes.length === 0) continue;
           
-          // Set a limit to avoid overwhelming the system
+          // Limit nodes to prevent performance issues
           const nodesToProcess = pageNodes.length > 500 ? pageNodes.slice(0, 500) : pageNodes;
-          if (pageNodes.length > 500) {
-            console.warn(`Processing only 500 out of ${pageNodes.length} nodes in container ${i + 1} to avoid performance issues`);
-          }
           
-          // Process this page's nodes
-          console.log(`Processing ${nodesToProcess.length} nodes in container ${i + 1}`);
+          // Run scan
           const pageIssues = await runAccessibilityCheck(nodesToProcess);
-          console.log(`Found ${pageIssues.length} accessibility issues in container ${i + 1}`);
           
-          // Update issues immediately to show progress
+          // Update state
           setIssues(prev => [...prev, ...pageIssues]);
           setScanProgress(prev => ({ 
             ...prev, 
@@ -188,93 +155,74 @@ const App: React.FC = () => {
           }));
         }
       } else {
-        // No pages found, scan the entire project
-        console.log("No top-level frames found, scanning entire project");
-        
+        // Scan entire project
         let frameNodes: any[] = [];
         let textNodes: any[] = [];
         
         try {
           frameNodes = await framer.getNodesWithType("FrameNode");
-          console.log(`Found ${frameNodes.length} frame nodes`);
         } catch (e) {
           console.error("Error getting frame nodes:", e);
-          frameNodes = [];
         }
         
         try {
           textNodes = await framer.getNodesWithType("TextNode");
-          console.log(`Found ${textNodes.length} text nodes`);
         } catch (e) {
           console.error("Error getting text nodes:", e);
-          textNodes = [];
         }
         
         const allNodes = [...frameNodes, ...textNodes];
-        setScanProgress(prev => ({ 
-          ...prev, 
+        setScanProgress({
           totalPages: 1,
           currentPage: 1,
-          nodesScanned: allNodes.length 
-        }));
-        
-        console.log(`Found ${allNodes.length} nodes to analyze`);
+          nodesScanned: allNodes.length,
+          issuesFound: 0
+        });
         
         if (allNodes.length === 0) {
           setError("No nodes found to analyze. Please make sure you have content in your Framer project.");
           return;
         }
         
-        // Set a limit to avoid overwhelming the system
+        // Limit nodes
         const nodesToProcess = allNodes.length > 1000 ? allNodes.slice(0, 1000) : allNodes;
-        if (allNodes.length > 1000) {
-          console.warn(`Processing only 1000 out of ${allNodes.length} nodes to avoid performance issues`);
-        }
         
-        // Run accessibility check on all nodes
+        // Run scan
         const foundIssues = await runAccessibilityCheck(nodesToProcess);
-        console.log(`Found ${foundIssues.length} accessibility issues`);
         
-        // Update issues state with found issues
+        // Update state
         setIssues(foundIssues);
-        setScanProgress(prev => ({ 
-          ...prev, 
-          issuesFound: foundIssues.length 
-        }));
+        setScanProgress(prev => ({ ...prev, issuesFound: foundIssues.length }));
       }
-      
-      setIsScanComplete(true);
     } catch (error) {
       console.error("Error during scan:", error);
-      throw error; // Re-throw to be caught by the main handler
+      throw error;
     }
   };
 
-  // Start accessibility scan using Framer API
+  // Handle scan
   const handleScan = async () => {
     if (!canAccessNodes) {
       setError("This plugin doesn't have permission to access nodes. Please check your permissions settings.");
       return;
     }
     
-    // Decrement free scan count if greater than 0
+    // Decrement scan count
     if (freeScanCount > 0) {
-      setFreeScanCount(prevCount => prevCount - 1);
+      setFreeScanCount(prev => prev - 1);
     }
     
     setError(null);
+    setIsScanning(true);
+    
     try {
-      setIsScanning(true);
-      
-      // Add a timeout to prevent infinite scanning
+      // Set timeout to prevent infinite scanning
       const scanPromise = performScan();
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error("Scan timed out after 120 seconds")), 120000);
       });
       
-      // Race the scan against the timeout
       await Promise.race([scanPromise, timeoutPromise]);
-      
     } catch (error) {
       console.error("Error scanning for accessibility issues:", error);
       setError(`Error scanning for accessibility issues: ${error instanceof Error ? error.message : String(error)}`);
@@ -283,31 +231,29 @@ const App: React.FC = () => {
     }
   };
 
-  // Update filters
+  // Handle filter change
   const handleFilterChange = (category: "severity" | "type", name: string, value: boolean) => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
+    setFilters(prev => ({
+      ...prev,
       [category]: {
-        ...prevFilters[category],
+        ...prev[category],
         [name]: value,
       },
     }));
   };
 
-  // Generate accessibility report
+  // Generate report
   const handleGenerateReport = () => {
     if (issues.length === 0) {
       setError("No accessibility issues to include in the report. Run a scan first.");
       return;
     }
     
-    // Show the report modal
     setShowReportModal(true);
   };
 
   return (
     <div className="app-container">
-      
       {error && (
         <div className="error-message">
           {error}
@@ -320,30 +266,31 @@ const App: React.FC = () => {
         </div>
       )}
       
-      {isScanning && (
-        <div className="scan-progress">
-          <div className="progress-bar-container">
-            <div 
-              className="progress-bar" 
-              style={{ width: `${scanProgress.totalPages > 0 ? Math.min(100, (scanProgress.currentPage / scanProgress.totalPages) * 100) : 0}%` }}
-            ></div>
-          </div>
-          <div className="progress-stats">
-            <div className="progress-stat">
-              <span className="stat-label">Pages:</span>
-              <span className="stat-value">{scanProgress.currentPage} of {scanProgress.totalPages || 1}</span>
-            </div>
-            <div className="progress-stat">
-              <span className="stat-label">Nodes scanned:</span>
-              <span className="stat-value">{scanProgress.nodesScanned}</span>
-            </div>
-            <div className="progress-stat">
-              <span className="stat-label">Issues found:</span>
-              <span className="stat-value">{scanProgress.issuesFound}</span>
-            </div>
-          </div>
-        </div>
-      )}
+
+{isScanning && (
+  <div className="scan-progress">
+    <div className="progress-bar-container">
+      <div 
+        className="progress-bar" 
+        style={{ width: `${scanProgress.totalPages > 0 ? Math.min(100, (scanProgress.currentPage / scanProgress.totalPages) * 100) : 0}%` }}
+      ></div>
+    </div>
+    <div className="progress-stats">
+      <div className="progress-stat">
+        <span className="stat-value">{scanProgress.currentPage} of {scanProgress.totalPages || 1}</span>
+        <span className="stat-label">Pages Scanned</span>
+      </div>
+      <div className="progress-stat">
+        <span className="stat-value">{scanProgress.nodesScanned}</span>
+        <span className="stat-label">Nodes Scanned</span>
+      </div>
+      <div className="progress-stat">
+        <span className="stat-value">{scanProgress.issuesFound}</span>
+        <span className="stat-label">Issues Found</span>
+      </div>
+    </div>
+  </div>
+)}
       
       <Dashboard 
         issues={filteredIssues}
@@ -358,7 +305,6 @@ const App: React.FC = () => {
         totalScans={totalScans}
       />
       
-      {/* Render the report modal when showReportModal is true */}
       {showReportModal && (
         <ReportModal 
           issues={issues}
@@ -366,7 +312,6 @@ const App: React.FC = () => {
         />
       )}
       
-      {/* Render the color blindness simulator when showSimulator is true */}
       {showSimulator && (
         <ColorBlindnessSimulator 
           onClose={() => setShowSimulator(false)}

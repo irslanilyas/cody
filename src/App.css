@@ -40,22 +40,6 @@ body {
   height: 100%;
 }
 
-.app-header {
-  margin-bottom: 16px;
-}
-
-.app-header h1 {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: var(--text-color);
-}
-
-.app-header p {
-  font-size: 14px;
-  color: var(--secondary-color);
-}
-
 /* Dashboard styles */
 .dashboard {
   display: flex;
@@ -63,10 +47,25 @@ body {
   gap: 16px;
 }
 
+/* Scan button container and counter styling */
+.scan-button-container {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 80%;
+}
+
 /* Primary controls section */
 .primary-controls {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.primary-controls .scan-button-container {
+  flex: 1;
+  min-width: 200px;
 }
 
 .scan-controls {
@@ -92,7 +91,6 @@ body {
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s;
-  position: relative;
   width: 100%;
 }
 
@@ -127,12 +125,12 @@ body {
   letter-spacing: -0.01em;
 }
 
-.scans-remaining {
+.scans-counter {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 10px;
-  font-weight: 400;
-  opacity: 0.9;
-  margin-left: 8px;
+  font-size: 12px;
+  color: var(--secondary-color);
+  text-align: center;
+  margin-top: 4px;
 }
 
 /* Report and simulator buttons */
@@ -148,11 +146,12 @@ body {
 }
 
 .report-button {
-  background-color: var(--success-color);
+  background-color: #212529;
+  min-width: 150px;
 }
 
 .report-button:hover {
-  background-color: #157347;
+  background-color: #343a40;
 }
 
 .simulator-button {
@@ -169,14 +168,14 @@ body {
   flex-direction: column;
   width: 100%;
   padding: 16px;
-  background-color: #f8f9fa;
+  background-color: #F8F8F8;
   border-radius: 6px;
+
 }
 
 .welcome-header {
   margin-bottom: 16px;
   text-align: left;
-  font-weight: 500;
 }
 
 .welcome-header h1 {
@@ -201,7 +200,6 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  margin-top: 16px;
   min-height: 150px;
 }
 
@@ -293,6 +291,7 @@ body {
   justify-content: center;
   padding: 16px;
   border-radius: 6px;
+  background-color: var(--background-color);
   box-shadow: 0 2px 4px var(--shadow-color);
 }
 
@@ -309,7 +308,7 @@ body {
 }
 
 .summary-count {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: bold;
   color: var(--text-color);
 }
@@ -413,29 +412,6 @@ body {
   font-size: 13px;
 }
 
-.issue-guideline {
-  margin-bottom: 12px;
-  background-color: rgba(13, 202, 240, 0.05);
-  padding: 10px;
-  border-radius: 4px;
-  font-size: 13px;
-}
-
-.guideline-label {
-  font-weight: 600;
-  margin-right: 6px;
-}
-
-.guideline-link {
-  margin-left: 8px;
-  color: var(--primary-color);
-  text-decoration: none;
-}
-
-.guideline-link:hover {
-  text-decoration: underline;
-}
-
 /* Fix suggestions */
 .fix-suggestions {
   margin-top: 12px;
@@ -478,32 +454,6 @@ body {
 
 .fix-button:hover, .expand-button:hover, .locate-button:hover {
   background-color: #0077cc;
-}
-
-.info-button {
-  background-color: var(--info-color);
-}
-
-.info-button:hover {
-  background-color: #0bacce;
-}
-
-.locate-button.locating {
-  background-color: var(--secondary-color);
-  position: relative;
-}
-
-.locate-button.locating::after {
-  content: '';
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.8);
-  animation: pulse 2s infinite;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
 }
 
 /* Empty state and loading */
@@ -563,12 +513,21 @@ body {
   background-color: #e9ecef;
   border-radius: 4px;
   overflow: hidden;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 20px;
 }
 
 .progress-bar {
   height: 100%;
-  background-color: var(--primary-color);
+  background-color: #2196F3;
   transition: width 0.3s ease;
 }
 
@@ -583,17 +542,17 @@ body {
   align-items: center;
 }
 
-.stat-label {
-  font-size: 12px;
-  color: var(--secondary-color);
-}
-
-.stat-value {
+.progress-stat .stat-value {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-color);
+  margin-bottom: 4px;
 }
 
+.progress-stat .stat-label {
+  font-size: 12px;
+  color: var(--secondary-color);
+}
 /* Message styles */
 .error-message {
   background-color: #fee2e2;
@@ -632,17 +591,6 @@ body {
   }
 }
 
-@keyframes pulse {
-  0% {
-    transform: translateY(-50%) scale(0.8);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-50%) scale(1.2);
-    opacity: 0;
-  }
-}
-
 /* Responsive styles */
 @media (max-width: 768px) {
   .scan-controls {
@@ -651,6 +599,7 @@ body {
   }
   
   .primary-controls {
+    flex-direction: column;
     width: 100%;
   }
   
@@ -665,4 +614,10 @@ body {
   .issues-summary {
     grid-template-columns: 1fr;
   }
+}
+.welcome-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
 }

@@ -40,14 +40,16 @@ const Dashboard: React.FC<DashboardProps> = ({
       {issues.length > 0 && (
         <div className="scan-controls">
           <div className="primary-controls">
-            <ScanButton 
-              onScan={onScan} 
-              isScanning={isScanning} 
-              disabled={!canScan}
-              freeScanCount={freeScanCount}
-              totalScans={totalScans}
-              showFreeScans={true}
-            />
+            <div className="scan-button-container">
+              <ScanButton 
+                onScan={onScan} 
+                isScanning={isScanning} 
+                disabled={!canScan}
+              />
+              <div className="scans-counter">
+                {freeScanCount}/{totalScans} Free Scans Left
+              </div>
+            </div>
             
             <button className="report-button" onClick={onGenerateReport}>
               Generate Report
