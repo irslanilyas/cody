@@ -52,16 +52,14 @@ const IssueList: React.FC<IssueListProps> = ({
           </div>
           
           {onScan && (
-            <div className="scan-button-container">
-              <ScanButton 
-                onScan={onScan} 
-                isScanning={false} 
-                disabled={false}
-              />
-              <div className="scans-counter">
-                {freeScanCount}/{totalScans} Free Scans Left
-              </div>
-            </div>
+            <ScanButton 
+              onScan={onScan} 
+              isScanning={false} 
+              disabled={false}
+              freeScanCount={freeScanCount}
+              totalScans={totalScans}
+              showFreeScans={true}
+            />
           )}
         </div>
         

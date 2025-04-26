@@ -45,10 +45,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                 onScan={onScan} 
                 isScanning={isScanning} 
                 disabled={!canScan}
+                freeScanCount={freeScanCount}
+                totalScans={totalScans}
+                showFreeScans={true}
               />
-              <div className="scans-counter">
-                {freeScanCount}/{totalScans} Free Scans Left
-              </div>
             </div>
             
             <button className="report-button" onClick={onGenerateReport}>
