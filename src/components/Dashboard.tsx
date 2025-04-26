@@ -12,8 +12,10 @@ interface DashboardProps {
   onScan: () => void;
   onFilterChange: (category: "severity" | "type", name: string, value: boolean) => void;
   onGenerateReport: () => void;
-  onOpenSimulator?: () => void; // New prop for opening the simulator
+  onOpenSimulator?: () => void;
   canScan?: boolean;
+  freeScanCount?: number;
+  totalScans?: number;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
@@ -24,7 +26,9 @@ const Dashboard: React.FC<DashboardProps> = ({
   onFilterChange,
   onGenerateReport,
   onOpenSimulator,
-  canScan = true
+  canScan = true,
+  freeScanCount = 2,
+  totalScans = 3
 }) => {
   // Count issues by severity
   const criticalCount = issues.filter(issue => issue.severity === "critical").length;
@@ -33,27 +37,34 @@ const Dashboard: React.FC<DashboardProps> = ({
   
   return (
     <div className="dashboard">
-      <div className="scan-controls">
-        <div className="primary-controls">
-          <ScanButton onScan={onScan} isScanning={isScanning} disabled={!canScan} />
-          
-          {issues.length > 0 && (
+      {issues.length > 0 && (
+        <div className="scan-controls">
+          <div className="primary-controls">
+            <ScanButton 
+              onScan={onScan} 
+              isScanning={isScanning} 
+              disabled={!canScan}
+              freeScanCount={freeScanCount}
+              totalScans={totalScans}
+              showFreeScans={true}
+            />
+            
             <button className="report-button" onClick={onGenerateReport}>
               Generate Report
             </button>
+          </div>
+          
+          {onOpenSimulator && (
+            <button 
+              className="simulator-button" 
+              onClick={onOpenSimulator}
+              title="Simulate how your design appears to users with color blindness"
+            >
+              Color Blindness Simulator
+            </button>
           )}
         </div>
-        
-        {onOpenSimulator && (
-          <button 
-            className="simulator-button" 
-            onClick={onOpenSimulator}
-            title="Simulate how your design appears to users with color blindness"
-          >
-            Color Blindness Simulator
-          </button>
-        )}
-      </div>
+      )}
       
       {issues.length > 0 && (
         <div className="issues-summary">
@@ -83,6 +94,9 @@ const Dashboard: React.FC<DashboardProps> = ({
         issues={issues} 
         isLoading={isScanning} 
         nodesAccessible={canScan}
+        onScan={onScan}
+        freeScanCount={freeScanCount}
+        totalScans={totalScans}
       />
     </div>
   );

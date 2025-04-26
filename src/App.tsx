@@ -61,6 +61,9 @@ const App: React.FC = () => {
   // Add state for the modals
   const [showReportModal, setShowReportModal] = useState(false);
   const [showSimulator, setShowSimulator] = useState(false);
+  // Add state for free scan count
+  const [freeScanCount, setFreeScanCount] = useState<number>(2);
+  const [totalScans] = useState<number>(3);
   
   const [filters, setFilters] = useState({
     severity: {
@@ -254,6 +257,11 @@ const App: React.FC = () => {
       return;
     }
     
+    // Decrement free scan count if greater than 0
+    if (freeScanCount > 0) {
+      setFreeScanCount(prevCount => prevCount - 1);
+    }
+    
     setError(null);
     try {
       setIsScanning(true);
@@ -299,10 +307,6 @@ const App: React.FC = () => {
 
   return (
     <div className="app-container">
-      <header className="app-header">
-        <h1>Accessibility Checker</h1>
-        <p>Analyze your Framer project for accessibility issues</p>
-      </header>
       
       {error && (
         <div className="error-message">
@@ -350,6 +354,8 @@ const App: React.FC = () => {
         onGenerateReport={handleGenerateReport}
         onOpenSimulator={() => setShowSimulator(true)}
         canScan={canAccessNodes}
+        freeScanCount={freeScanCount}
+        totalScans={totalScans}
       />
       
       {/* Render the report modal when showReportModal is true */}
