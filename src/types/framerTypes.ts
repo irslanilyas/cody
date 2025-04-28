@@ -11,8 +11,11 @@ declare module 'framer-plugin' {
     
     // Selection and view methods
     setSelection: (nodeIds: string[]) => Promise<void>;
-    zoomIntoView: (nodeId: string | string[]) => Promise<void>;
+    zoomIntoView: (nodeId: string | string[], options?: { zoom?: number, duration?: number }) => Promise<void>;
+    
+    // Alternative methods that might be available in different Framer versions
+    selectNode?: (nodeId: string) => Promise<void>;
+    focusNode?: (nodeId: string) => Promise<void>;
+    zoomTo?: (nodeId: string | string[]) => Promise<void>;
   }
 }
-
-export {};

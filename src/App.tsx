@@ -107,126 +107,126 @@ const App: React.FC = () => {
     setFilteredIssues(filtered);
   }, [issues, filters, activeTab]);
 
-  // Perform scan
-  const performScan = async () => {
-    // Reset state
-    setScanProgress({
-      currentPage: 0,
-      totalPages: 0,
-      nodesScanned: 0,
-      issuesFound: 0
-    });
-    
-    let allFoundIssues: Issue[] = [];
-    
+// Perform scan
+const performScan = async () => {
+  // Reset state
+  setScanProgress({
+    currentPage: 0,
+    totalPages: 0,
+    nodesScanned: 0,
+    issuesFound: 0
+  });
+  
+  let allFoundIssues: Issue[] = [];
+  
+  try {
+    // Get pages/frames
+    let pages: any[] = [];
     try {
-      // Get pages/frames
-      let pages: any[] = [];
-      try {
-        const canvasRoot = await framer.getCanvasRoot();
-        if (canvasRoot) {
-          const rootChildren = await canvasRoot.getChildren();
-          pages = rootChildren.filter(node => isFrameNode(node));
-        }
-        
-        setScanProgress(prev => ({ ...prev, totalPages: pages.length || 1 }));
-      } catch (e) {
-        console.error("Error getting top-level frames:", e);
-        pages = [];
+      const canvasRoot = await framer.getCanvasRoot();
+      if (canvasRoot) {
+        const rootChildren = await canvasRoot.getChildren();
+        pages = rootChildren.filter(node => isFrameNode(node));
       }
       
-      // Process each page or scan entire project
-      if (pages.length > 0) {
-        for (let i = 0; i < pages.length; i++) {
-          const page = pages[i];
-          setScanProgress(prev => ({ ...prev, currentPage: i + 1 }));
-          
-          // Get nodes
-          let frameNodes = [page];
-          let textNodes: any[] = [];
-          
-          try {
-            const pageFrameNodes = await page.getNodesWithType("FrameNode");
-            frameNodes = [page, ...pageFrameNodes];
-          } catch (e) {
-            console.error(`Error getting frame nodes for page ${i + 1}:`, e);
-          }
-          
-          try {
-            textNodes = await page.getNodesWithType("TextNode");
-          } catch (e) {
-            console.error(`Error getting text nodes for page ${i + 1}:`, e);
-          }
-          
-          // Process nodes
-          const pageNodes = [...frameNodes, ...textNodes];
-          setScanProgress(prev => ({ 
-            ...prev, 
-            nodesScanned: prev.nodesScanned + pageNodes.length 
-          }));
-          
-          if (pageNodes.length === 0) continue;
-          
-          // Limit nodes to prevent performance issues
-          const nodesToProcess = pageNodes.length > 500 ? pageNodes.slice(0, 500) : pageNodes;
-          
-          // Run scan
-          const pageIssues = await runAccessibilityCheck(nodesToProcess);
-          
-          // Update scan progress (not actual displayed issues yet)
-          allFoundIssues = [...allFoundIssues, ...pageIssues];
-          setScanProgress(prev => ({ 
-            ...prev, 
-            issuesFound: allFoundIssues.length 
-          }));
-        }
-      } else {
-        // Scan entire project
-        let frameNodes: any[] = [];
+      setScanProgress(prev => ({ ...prev, totalPages: pages.length || 1 }));
+    } catch (e) {
+      console.error("Error getting top-level frames:", e);
+      pages = [];
+    }
+    
+    // Process each page or scan entire project
+    if (pages.length > 0) {
+      for (let i = 0; i < pages.length; i++) {
+        const page = pages[i];
+        setScanProgress(prev => ({ ...prev, currentPage: i + 1 }));
+        
+        // Get nodes
+        let frameNodes = [page];
         let textNodes: any[] = [];
         
         try {
-          frameNodes = await framer.getNodesWithType("FrameNode");
+          const pageFrameNodes = await page.getNodesWithType("FrameNode");
+          frameNodes = [page, ...pageFrameNodes];
         } catch (e) {
-          console.error("Error getting frame nodes:", e);
+          console.error(`Error getting frame nodes for page ${i + 1}:`, e);
         }
         
         try {
-          textNodes = await framer.getNodesWithType("TextNode");
+          textNodes = await page.getNodesWithType("TextNode");
         } catch (e) {
-          console.error("Error getting text nodes:", e);
+          console.error(`Error getting text nodes for page ${i + 1}:`, e);
         }
         
-        const allNodes = [...frameNodes, ...textNodes];
-        setScanProgress({
-          totalPages: 1,
-          currentPage: 1,
-          nodesScanned: allNodes.length,
-          issuesFound: 0
-        });
+        // Process nodes
+        const pageNodes = [...frameNodes, ...textNodes];
+        setScanProgress(prev => ({ 
+          ...prev, 
+          nodesScanned: prev.nodesScanned + pageNodes.length 
+        }));
         
-        if (allNodes.length === 0) {
-          setError("No nodes found to analyze. Please make sure you have content in your Framer project.");
-          return [];
-        }
+        if (pageNodes.length === 0) continue;
         
-        // Limit nodes
-        const nodesToProcess = allNodes.length > 1000 ? allNodes.slice(0, 1000) : allNodes;
+        // Limit nodes to prevent performance issues
+        const nodesToProcess = pageNodes.length > 500 ? pageNodes.slice(0, 500) : pageNodes;
         
-        // Run scan
-        allFoundIssues = await runAccessibilityCheck(nodesToProcess);
+        // Run scan - ensure color blindness analysis is included
+        const pageIssues = await runAccessibilityCheck(nodesToProcess);
         
-        // Update scan progress counter only
-        setScanProgress(prev => ({ ...prev, issuesFound: allFoundIssues.length }));
+        // Update scan progress (not actual displayed issues yet)
+        allFoundIssues = [...allFoundIssues, ...pageIssues];
+        setScanProgress(prev => ({ 
+          ...prev, 
+          issuesFound: allFoundIssues.length 
+        }));
+      }
+    } else {
+      // Scan entire project
+      let frameNodes: any[] = [];
+      let textNodes: any[] = [];
+      
+      try {
+        frameNodes = await framer.getNodesWithType("FrameNode");
+      } catch (e) {
+        console.error("Error getting frame nodes:", e);
       }
       
-      // Return all found issues to be set after scan completes
-      return allFoundIssues;
-    } catch (error) {
-      console.error("Error during scan:", error);
-      throw error;
+      try {
+        textNodes = await framer.getNodesWithType("TextNode");
+      } catch (e) {
+        console.error("Error getting text nodes:", e);
+      }
+      
+      const allNodes = [...frameNodes, ...textNodes];
+      setScanProgress({
+        totalPages: 1,
+        currentPage: 1,
+        nodesScanned: allNodes.length,
+        issuesFound: 0
+      });
+      
+      if (allNodes.length === 0) {
+        setError("No nodes found to analyze. Please make sure you have content in your Framer project.");
+        return [];
+      }
+      
+      // Limit nodes
+      const nodesToProcess = allNodes.length > 1000 ? allNodes.slice(0, 1000) : allNodes;
+      
+      // Run scan - ensure color blindness analysis is included
+      allFoundIssues = await runAccessibilityCheck(nodesToProcess);
+      
+      // Update scan progress counter only
+      setScanProgress(prev => ({ ...prev, issuesFound: allFoundIssues.length }));
     }
-  };
+    
+    // Return all found issues to be set after scan completes
+    return allFoundIssues;
+  } catch (error) {
+    console.error("Error during scan:", error);
+    throw error;
+  }
+};
 
   // Handle scan
   const handleScan = async () => {
@@ -346,7 +346,7 @@ const App: React.FC = () => {
               {getIssueTypeDescription(label)}
             </p>
             
-            {issues.map((issue, index) => (
+            {issues.map((issue) => (
               <div key={issue.id} className="issue-item-compact">
                 {severityDot(issue.severity)}
                 <div className="issue-info">
@@ -512,6 +512,22 @@ const App: React.FC = () => {
           <div className="completed-container">
             <div className="completed-header">
               <h1>Scan Completed</h1>
+              {activeTab !== "All" && filteredIssues.length === 0 && (
+  <div className="empty-state" style={{ marginTop: "16px" }}>
+    <h3 className="empty-state-title">No {activeTab} Issues Found</h3>
+    <p className="empty-state-description">
+      There are no {activeTab.toLowerCase()} level issues detected in your design.
+      {activeTab === "Critical" && " That's great news for accessibility!"}
+    </p>
+  </div>
+)}
+
+// The issue types container should be conditional to show only when there are filtered issues
+{filteredIssues.length > 0 && (
+  <div className="issue-types-container">
+    {/* Your existing issue type conditionals */}
+  </div>
+)}
               <p>Generate a report or click the scan button to scan again</p>
             </div>
             

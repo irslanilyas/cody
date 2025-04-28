@@ -34,22 +34,35 @@ const IssueItem: React.FC<IssueItemProps> = ({ issue }) => {
         return;
       }
       
-      // First just set the selection
-      await framer.setSelection([nodeId]);
-      
-      // Delay the zoom to create a visual separation between selection and zoom
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Then zoom, possibly with custom options if supported
+      // First set the selection
       try {
-        // Try with options first (this is speculative based on your description)
-        await (framer as any).zoomIntoView(nodeId, {
-          zoom: 0.1,  // Less zoom (0.0-1.0 range)
-          duration: 800  // Slower animation in milliseconds
-        });
+        await framer.setSelection([nodeId]);
+        console.log("Selection set to:", nodeId);
+        
+        // Delay the zoom to create a visual separation between selection and zoom
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Then zoom, with a direct call that ensures it works
+        if (typeof framer.zoomIntoView === 'function') {
+          await framer.zoomIntoView(nodeId);
+          console.log("Zoomed into node:", nodeId);
+        } else {
+          // Try alternative approaches
+          console.warn("zoomIntoView not available, trying alternative");
+          
+          // Try to use any available zoomTo method or other alternatives
+          if (typeof (framer as any).zoomTo === 'function') {
+            await (framer as any).zoomTo(nodeId);
+          } else if (typeof (framer as any).focusNode === 'function') {
+            await (framer as any).focusNode(nodeId);
+          }
+        }
       } catch (e) {
-        // Fall back to standard zoom if options aren't supported
-        await (framer as any).zoomIntoView(nodeId);
+        console.error("Error during selection or zoom:", e);
+        // Try a different approach as fallback
+        if (typeof (framer as any).selectNode === 'function') {
+          await (framer as any).selectNode(nodeId);
+        }
       }
     } catch (error) {
       console.error("Error locating node:", error);
