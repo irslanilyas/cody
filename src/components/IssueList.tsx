@@ -21,14 +21,6 @@ const IssueList: React.FC<IssueListProps> = ({
   freeScanCount = 2,
   totalScans = 3
 }) => {
-  if (isLoading) {
-    return (
-      <div className="loading-spinner">
-        <span className="sr-only">Loading...</span>
-      </div>
-    );
-  }
-
   if (!nodesAccessible) {
     return (
       <div className="empty-state">
@@ -41,7 +33,7 @@ const IssueList: React.FC<IssueListProps> = ({
     );
   }
 
-  if (issues.length === 0) {
+  if (issues.length === 0 && !isLoading) {
     return (
       <div className="welcome-section">
         {/* First container: Welcome text and scan button with gray background */}
@@ -121,6 +113,7 @@ const IssueList: React.FC<IssueListProps> = ({
     );
   }
 
+  // The actual list of issues (we don't show a loading spinner here anymore)
   return (
     <div className="issue-list">
       {issues.map((issue) => (

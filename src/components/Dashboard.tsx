@@ -12,7 +12,6 @@ interface DashboardProps {
   onScan: () => void;
   onFilterChange: (category: "severity" | "type", name: string, value: boolean) => void;
   onGenerateReport: () => void;
-  onOpenSimulator?: () => void;
   canScan?: boolean;
   freeScanCount?: number;
   totalScans?: number;
@@ -25,7 +24,6 @@ const Dashboard: React.FC<DashboardProps> = ({
   onScan,
   onFilterChange,
   onGenerateReport,
-  onOpenSimulator,
   canScan = true,
   freeScanCount = 2,
   totalScans = 3
@@ -55,16 +53,6 @@ const Dashboard: React.FC<DashboardProps> = ({
               Generate Report
             </button>
           </div>
-          
-          {onOpenSimulator && (
-            <button 
-              className="simulator-button" 
-              onClick={onOpenSimulator}
-              title="Simulate how your design appears to users with color blindness"
-            >
-              Color Blindness Simulator
-            </button>
-          )}
         </div>
       )}
       
