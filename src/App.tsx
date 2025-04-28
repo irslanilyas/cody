@@ -40,6 +40,7 @@ function usePermissions() {
 const App: React.FC = () => {
   // State
   const [isScanning, setIsScanning] = useState<boolean>(false);
+  const [scanCompleted, setScanCompleted] = useState<boolean>(false);
   const [issues, setIssues] = useState<Issue[]>([]);
   const [filteredIssues, setFilteredIssues] = useState<Issue[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +53,7 @@ const App: React.FC = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [freeScanCount, setFreeScanCount] = useState<number>(2);
   const [totalScans] = useState<number>(3);
+  const [activeTab, setActiveTab] = useState<string>("All");
   
   const canAccessNodes = usePermissions();
   
@@ -71,13 +73,39 @@ const App: React.FC = () => {
     },
   });
 
+  // Get counts by severity
+  const criticalCount = issues.filter(issue => issue.severity === "critical").length;
+  const warningCount = issues.filter(issue => issue.severity === "warning").length;
+  const infoCount = issues.filter(issue => issue.severity === "info").length;
+
+  // Get counts by type
+  const contrastIssues = issues.filter(issue => issue.type === "contrast");
+  const touchTargetIssues = issues.filter(issue => issue.type === "touchTarget");
+  const textSizeIssues = issues.filter(issue => issue.type === "textSize");
+  const altTextIssues = issues.filter(issue => issue.type === "altText");
+  const colorBlindnessIssues = issues.filter(issue => issue.type === "colorBlindness");
+  const navigationIssues = issues.filter(issue => issue.type === "navigation");
+
   // Apply filters to issues
   useEffect(() => {
-    const filtered = issues.filter((issue) => {
-      return filters.severity[issue.severity] && filters.type[issue.type];
+    let filtered = [...issues];
+
+    // Apply active tab filter
+    if (activeTab === "Critical") {
+      filtered = filtered.filter(issue => issue.severity === "critical");
+    } else if (activeTab === "Warnings") {
+      filtered = filtered.filter(issue => issue.severity === "warning");
+    } else if (activeTab === "Info") {
+      filtered = filtered.filter(issue => issue.severity === "info");
+    }
+
+    // Apply type filters
+    filtered = filtered.filter((issue) => {
+      return filters.type[issue.type];
     });
+
     setFilteredIssues(filtered);
-  }, [issues, filters]);
+  }, [issues, filters, activeTab]);
 
   // Perform scan
   const performScan = async () => {
@@ -88,7 +116,8 @@ const App: React.FC = () => {
       nodesScanned: 0,
       issuesFound: 0
     });
-    setIssues([]);
+    
+    let allFoundIssues: Issue[] = [];
     
     try {
       // Get pages/frames
@@ -144,11 +173,11 @@ const App: React.FC = () => {
           // Run scan
           const pageIssues = await runAccessibilityCheck(nodesToProcess);
           
-          // Update state
-          setIssues(prev => [...prev, ...pageIssues]);
+          // Update scan progress (not actual displayed issues yet)
+          allFoundIssues = [...allFoundIssues, ...pageIssues];
           setScanProgress(prev => ({ 
             ...prev, 
-            issuesFound: prev.issuesFound + pageIssues.length 
+            issuesFound: allFoundIssues.length 
           }));
         }
       } else {
@@ -178,19 +207,21 @@ const App: React.FC = () => {
         
         if (allNodes.length === 0) {
           setError("No nodes found to analyze. Please make sure you have content in your Framer project.");
-          return;
+          return [];
         }
         
         // Limit nodes
         const nodesToProcess = allNodes.length > 1000 ? allNodes.slice(0, 1000) : allNodes;
         
         // Run scan
-        const foundIssues = await runAccessibilityCheck(nodesToProcess);
+        allFoundIssues = await runAccessibilityCheck(nodesToProcess);
         
-        // Update state
-        setIssues(foundIssues);
-        setScanProgress(prev => ({ ...prev, issuesFound: foundIssues.length }));
+        // Update scan progress counter only
+        setScanProgress(prev => ({ ...prev, issuesFound: allFoundIssues.length }));
       }
+      
+      // Return all found issues to be set after scan completes
+      return allFoundIssues;
     } catch (error) {
       console.error("Error during scan:", error);
       throw error;
@@ -211,15 +242,23 @@ const App: React.FC = () => {
     
     setError(null);
     setIsScanning(true);
+    setScanCompleted(false);
+    setIssues([]); // Clear existing issues
+    setActiveTab("All"); // Reset to All tab
     
     try {
       // Set timeout to prevent infinite scanning
       const scanPromise = performScan();
-      const timeoutPromise = new Promise((_, reject) => {
+      const timeoutPromise = new Promise<Issue[]>((_, reject) => {
         setTimeout(() => reject(new Error("Scan timed out after 120 seconds")), 120000);
       });
       
-      await Promise.race([scanPromise, timeoutPromise]);
+      // Wait for scan to complete
+      const foundIssues = await Promise.race([scanPromise, timeoutPromise]);
+      
+      // Only update issues after scan is complete
+      setIssues(foundIssues || []);
+      setScanCompleted(true);
     } catch (error) {
       console.error("Error scanning for accessibility issues:", error);
       setError(`Error scanning for accessibility issues: ${error instanceof Error ? error.message : String(error)}`);
@@ -247,6 +286,131 @@ const App: React.FC = () => {
     }
     
     setShowReportModal(true);
+  };
+
+  // Issue type components for the completed screen
+  const issueTypeItem = (
+    icon: React.ReactNode, 
+    label: string, 
+    issues: Issue[], 
+    isExpanded: boolean, 
+    toggleExpand: () => void
+  ) => {
+    const severityDot = (severity: string) => {
+      switch (severity) {
+        case 'critical':
+          return <span className="severity-dot critical"></span>;
+        case 'warning':
+          return <span className="severity-dot warning"></span>;
+        case 'info':
+          return <span className="severity-dot info"></span>;
+        default:
+          return null;
+      }
+    };
+
+    // Get the most severe issue type
+    let mostSeverePriority = 3; // 1: critical, 2: warning, 3: info
+    let mostSevereType = "info";
+    
+    issues.forEach(issue => {
+      if (issue.severity === "critical" && mostSeverePriority > 1) {
+        mostSeverePriority = 1;
+        mostSevereType = "critical";
+      } else if (issue.severity === "warning" && mostSeverePriority > 2) {
+        mostSeverePriority = 2;
+        mostSevereType = "warning";
+      }
+    });
+
+    return (
+      <div className="issue-type-container">
+        <div className="issue-type-header" onClick={toggleExpand}>
+          <div className="issue-type-info">
+            {icon}
+            <span className="issue-type-label">{label}</span>
+            {severityDot(mostSevereType)}
+            <span className="issue-count">{issues.length} {issues.length === 1 ? 'Issue' : 'Issues'}</span>
+          </div>
+          <button className="expand-button">
+            {isExpanded ? 'Collapse' : 'Expand'} 
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d={isExpanded ? "M4 10L8 6L12 10" : "M4 6L8 10L12 6"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        
+        {isExpanded && (
+          <div className="issue-type-content">
+            <p className="issue-type-description">
+              {getIssueTypeDescription(label)}
+            </p>
+            
+            {issues.map((issue, index) => (
+              <div key={issue.id} className="issue-item-compact">
+                {severityDot(issue.severity)}
+                <div className="issue-info">
+                  <div className="issue-location">Element : {issue.location.nodeName}</div>
+                  <div className="issue-description">{issue.description}</div>
+                </div>
+                <div className="issue-actions">
+                  <button className="locate-button-small">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M8 8.5C8.82843 8.5 9.5 7.82843 9.5 7C9.5 6.17157 8.82843 5.5 8 5.5C7.17157 5.5 6.5 6.17157 6.5 7C6.5 7.82843 7.17157 8.5 8 8.5Z" fill="white"/>
+                      <path d="M8 14C10.5 11.5 13 9.36396 13 6.5C13 3.63604 10.7614 1.5 8 1.5C5.23858 1.5 3 3.63604 3 6.5C3 9.36396 5.5 11.5 8 14Z" stroke="white" strokeWidth="2"/>
+                    </svg>
+                    Locate
+                  </button>
+                  <button className="details-button">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M8 12.5V8M8 5.5V5M1.5 8C1.5 4.41015 4.41015 1.5 8 1.5C11.5899 1.5 14.5 4.41015 14.5 8C14.5 11.5899 11.5899 14.5 8 14.5C4.41015 14.5 1.5 11.5899 1.5 8Z" stroke="black" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                    Show Details
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Helper function to get descriptions for each issue type
+  const getIssueTypeDescription = (type: string): string => {
+    switch (type) {
+      case 'Contrast':
+        return 'In this section you can see sections that potentially have contrast issues, meaning there is difficulty reading the content due to mismatched contrast.';
+      case 'Touch Target':
+        return 'These elements may be too small or too close together, making them difficult to tap accurately on touch screens.';
+      case 'Text Size':
+        return 'Text that is too small can be difficult to read, especially for users with visual impairments.';
+      case 'Alt text':
+        return 'Images without alternative text are not accessible to screen reader users or when images fail to load.';
+      case 'Color Blindness':
+        return 'Colors that rely solely on color to convey information may be difficult for users with color vision deficiencies.';
+      case 'Navigation':
+        return 'These issues affect how users navigate through the content, especially for keyboard and screen reader users.';
+      default:
+        return '';
+    }
+  };
+
+  // Issue type expanded state management
+  const [expandedTypes, setExpandedTypes] = useState<Record<string, boolean>>({
+    contrast: false,
+    touchTarget: false,
+    textSize: false,
+    altText: false,
+    colorBlindness: false,
+    navigation: false
+  });
+
+  const toggleExpand = (type: string) => {
+    setExpandedTypes(prev => ({
+      ...prev,
+      [type]: !prev[type]
+    }));
   };
 
   return (
@@ -333,8 +497,8 @@ const App: React.FC = () => {
             </div>
           </div>
           
-          {/* Second container: Loading spinner with white background */}
-          <div className="instructions-container">
+            {/* Second container: Loading spinner with white background */}
+            <div className="instructions-container">
             <div className="instruction-box">
               <div className="loading-spinner"></div>
             </div>
@@ -342,17 +506,189 @@ const App: React.FC = () => {
         </div>
       )}
       
-      <Dashboard 
-        issues={filteredIssues}
-        isScanning={isScanning}
-        onScan={handleScan}
-        onFilterChange={handleFilterChange}
-        filters={filters}
-        onGenerateReport={handleGenerateReport}
-        canScan={canAccessNodes}
-        freeScanCount={freeScanCount}
-        totalScans={totalScans}
-      />
+      {!isScanning && scanCompleted && issues.length > 0 && (
+        <div className="scan-completed-section">
+          {/* First container: Scan completed and buttons */}
+          <div className="completed-container">
+            <div className="completed-header">
+              <h1>Scan Completed</h1>
+              <p>Generate a report or click the scan button to scan again</p>
+            </div>
+            
+            <div className="buttons-container">
+              <button className="scan-button" onClick={handleScan}>
+                <span className="accessibility-icon">
+                  <svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5.95731 3.20796C5.64007 3.20796 5.32996 3.11388 5.06619 2.93764C4.80242 2.76139 4.59683 2.51088 4.47543 2.21779C4.35403 1.92471 4.32226 1.6022 4.38415 1.29106C4.44604 0.979917 4.59881 0.694115 4.82313 0.469795C5.04745 0.245475 5.33325 0.0927105 5.64439 0.0308207C5.95553 -0.0310691 6.27804 0.00069499 6.57113 0.122096C6.86422 0.243498 7.11472 0.449083 7.29097 0.712856C7.46722 0.976629 7.56129 1.28674 7.56129 1.60398C7.56083 2.02924 7.3917 2.43695 7.09099 2.73766C6.79029 3.03837 6.38257 3.2075 5.95731 3.20796Z" fill="white"/>
+                    <path d="M10.9984 3.23088L10.9855 3.23432L10.9735 3.23804C10.9449 3.24606 10.9162 3.25465 10.8876 3.26353C10.3545 3.41992 7.76755 4.14916 5.94503 4.14916C4.2514 4.14916 1.89842 3.51902 1.1457 3.30507C1.07078 3.27611 0.994277 3.25144 0.916559 3.23117C0.372352 3.08796 0 3.64075 0 4.14601C0 4.64639 0.449687 4.8847 0.90367 5.05569V5.06371L3.63101 5.91554C3.9097 6.02238 3.98417 6.1315 4.02054 6.22602C4.13884 6.52935 4.04432 7.12998 4.0108 7.33964L3.84468 8.62855L2.92268 13.6751C2.91981 13.6888 2.91723 13.7029 2.91494 13.7172L2.90836 13.7535C2.84191 14.2161 3.18161 14.665 3.82491 14.665C4.38631 14.665 4.63406 14.2774 4.74147 13.7501C4.84888 13.2228 5.54346 9.23692 5.94446 9.23692C6.34545 9.23692 7.1715 13.7501 7.1715 13.7501C7.27891 14.2774 7.52667 14.665 8.08806 14.665C8.73309 14.665 9.07279 14.2141 9.00462 13.7501C8.99877 13.7111 8.99151 13.6723 8.98285 13.6338L8.04825 8.62913L7.88241 7.34021C7.76239 6.5895 7.85892 6.34145 7.89157 6.28331C7.89246 6.28194 7.89322 6.28051 7.89386 6.27901C7.9248 6.22173 8.06572 6.09341 8.39453 5.96996L10.9517 5.07603C10.9674 5.07184 10.9829 5.06687 10.9981 5.06113C11.4564 4.88928 11.9147 4.65155 11.9147 4.14658C11.9147 3.64161 11.5426 3.08796 10.9984 3.23088Z" fill="white"/>
+                  </svg>
+                </span>
+                <span className="scan-button-text">Scan again</span>
+              </button>
+              <button className="generate-report-button" onClick={handleGenerateReport}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 2H12C13.1 2 14 2.9 14 4V12C14 13.1 13.1 14 12 14H4C2.9 14 2 13.1 2 12V4C2 2.9 2.9 2 4 2Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M6 5H10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M6 8H10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M6 11H8" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Generate Report
+              </button>
+            </div>
+            
+            {/* Stats boxes showing issue counts by severity */}
+            <div className="severity-stats">
+              <div className="severity-box critical">
+                <div className="severity-icon">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="6" cy="6" r="6" fill="#E53935"/>
+                  </svg>
+                </div>
+                <div className="severity-label">Critical</div>
+                <div className="severity-count">{criticalCount}</div>
+              </div>
+              
+              <div className="severity-box warning">
+                <div className="severity-icon">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.7 9.9L6.7 1.5C6.5 1.2 6.3 1 6 1C5.7 1 5.5 1.2 5.3 1.5L0.3 9.9C0.1 10.2 0 10.4 0 10.7C0 11.4 0.6 12 1.3 12H10.7C11.4 12 12 11.4 12 10.7C12 10.4 11.9 10.2 11.7 9.9ZM6 10C5.7 10 5.5 9.8 5.5 9.5C5.5 9.2 5.7 9 6 9C6.3 9 6.5 9.2 6.5 9.5C6.5 9.8 6.3 10 6 10ZM6.5 8H5.5V5H6.5V8Z" fill="#FF9800"/>
+                  </svg>
+                </div>
+                <div className="severity-label">Warnings</div>
+                <div className="severity-count">{warningCount}</div>
+              </div>
+              
+              <div className="severity-box info">
+                <div className="severity-icon">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="6" cy="6" r="6" fill="#2196F3"/>
+                  </svg>
+                </div>
+                <div className="severity-label">Info</div>
+                <div className="severity-count">{infoCount}</div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Tabs for filtering by severity */}
+          <div className="filter-tabs-container">
+            <div className="filter-tabs">
+              <button 
+                className={`tab ${activeTab === 'All' ? 'active' : ''}`} 
+                onClick={() => setActiveTab('All')}
+              >
+                All
+              </button>
+              <button 
+                className={`tab ${activeTab === 'Critical' ? 'active' : ''}`} 
+                onClick={() => setActiveTab('Critical')}
+              >
+                Critical
+              </button>
+              <button 
+                className={`tab ${activeTab === 'Warnings' ? 'active' : ''}`} 
+                onClick={() => setActiveTab('Warnings')}
+              >
+                Warnings
+              </button>
+              <button 
+                className={`tab ${activeTab === 'Info' ? 'active' : ''}`} 
+                onClick={() => setActiveTab('Info')}
+              >
+                Info
+              </button>
+            </div>
+          </div>
+          
+          {/* Issue types */}
+          <div className="issue-types-container">
+            {contrastIssues.length > 0 && issueTypeItem(
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14Z" stroke="black" strokeWidth="2"/>
+                <path d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14Z" fill="black" fillOpacity="0.5"/>
+              </svg>,
+              'Contrast',
+              contrastIssues,
+              expandedTypes.contrast,
+              () => toggleExpand('contrast')
+            )}
+            
+            {touchTargetIssues.length > 0 && issueTypeItem(
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4.5 7.5C5.88071 7.5 7 6.38071 7 5C7 3.61929 5.88071 2.5 4.5 2.5C3.11929 2.5 2 3.61929 2 5C2 6.38071 3.11929 7.5 4.5 7.5Z" stroke="black" strokeWidth="1.5"/>
+                <path d="M11.5 13.5C12.8807 13.5 14 12.3807 14 11C14 9.61929 12.8807 8.5 11.5 8.5C10.1193 8.5 9 9.61929 9 11C9 12.3807 10.1193 13.5 11.5 13.5Z" stroke="black" strokeWidth="1.5"/>
+                <path d="M11.5 5.5L4.5 10.5" stroke="black" strokeWidth="1.5"/>
+              </svg>,
+              'Touch Target',
+              touchTargetIssues,
+              expandedTypes.touchTarget,
+              () => toggleExpand('touchTarget')
+            )}
+            
+            {colorBlindnessIssues.length > 0 && issueTypeItem(
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14Z" stroke="black" strokeWidth="1.5"/>
+                <path d="M4 8C4 5.79086 5.79086 4 8 4" stroke="black" strokeWidth="1.5"/>
+                <path d="M8 12C10.2091 12 12 10.2091 12 8" stroke="black" strokeWidth="1.5"/>
+              </svg>,
+              'Color Blindness',
+              colorBlindnessIssues,
+              expandedTypes.colorBlindness,
+              () => toggleExpand('colorBlindness')
+            )}
+            
+            {textSizeIssues.length > 0 && issueTypeItem(
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 4H13" stroke="black" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M8 4V12" stroke="black" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M5 12H11" stroke="black" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>,
+              'Text Size',
+              textSizeIssues,
+              expandedTypes.textSize,
+              () => toggleExpand('textSize')
+            )}
+            
+            {altTextIssues.length > 0 && issueTypeItem(
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="2" width="12" height="12" rx="2" stroke="black" strokeWidth="1.5"/>
+                <path d="M5 10L11 10" stroke="black" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M5 7L8 7" stroke="black" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>,
+              'Alt text',
+              altTextIssues,
+              expandedTypes.altText,
+              () => toggleExpand('altText')
+            )}
+            
+            {navigationIssues.length > 0 && issueTypeItem(
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 14L14 8L8 2L2 8L8 14Z" stroke="black" strokeWidth="1.5" strokeLinejoin="round"/>
+                <path d="M8 8L8 14" stroke="black" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M8 8L14 8" stroke="black" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>,
+              'Navigation',
+              navigationIssues,
+              expandedTypes.navigation,
+              () => toggleExpand('navigation')
+            )}
+          </div>
+        </div>
+      )}
+      
+      {!isScanning && (!scanCompleted || issues.length === 0) && (
+        <Dashboard 
+          issues={filteredIssues}
+          isScanning={isScanning}
+          onScan={handleScan}
+          onFilterChange={handleFilterChange}
+          filters={filters}
+          onGenerateReport={handleGenerateReport}
+          canScan={canAccessNodes}
+          freeScanCount={freeScanCount}
+          totalScans={totalScans}
+        />
+      )}
       
       {showReportModal && (
         <ReportModal 
