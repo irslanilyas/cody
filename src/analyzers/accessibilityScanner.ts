@@ -18,14 +18,23 @@ function generateUUID(): string {
 /**
  * Runs a complete accessibility check on all nodes in the Framer project
  * @param nodes Array of nodes from the Framer project
+ * @param options Optional settings for the accessibility check
  * @returns Array of accessibility issues found
  */
-export async function runAccessibilityCheck(nodes: any[]): Promise<Issue[]> {
+export async function runAccessibilityCheck(
+  nodes: any[], 
+  options?: { includeColorBlindness?: boolean }
+): Promise<Issue[]> {
   if (!nodes || nodes.length === 0) {
     return [];
   }
 
   try {
+    // Default options
+    const checkOptions = {
+      includeColorBlindness: options?.includeColorBlindness ?? true
+    };
+
     // Run all analyzers in parallel for better performance
     const [
       contrastIssues,

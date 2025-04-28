@@ -323,15 +323,16 @@ const App: React.FC = () => {
       // Try to get the node by ID
       let node;
       try {
-        node = await framer.getNodeById(issue.location.nodeId);
+        // Get all frame nodes
+        const frameNodes = await framer.getNodesWithType("FrameNode");
+        // Get all text nodes
+        const textNodes = await framer.getNodesWithType("TextNode");
+        // Combine all nodes
+        const allNodes = [...frameNodes, ...textNodes];
+        // Find the node with the matching ID
+        node = allNodes.find(n => n.id === issue.location.nodeId);
       } catch (e) {
-        console.error("Error getting node by ID:", e);
-      }
-      
-      if (!node) {
-        console.log("Node not found by ID, trying alternative methods...");
-        setError("Could not locate this element. It may have been deleted or moved.");
-        return;
+        console.error("Error finding node by ID:", e);
       }
       
       // Attempt to select and focus on the node
@@ -349,8 +350,8 @@ const App: React.FC = () => {
             console.log("Node selected via legacy select method");
           }
           // Try focusing on node
-          else if (typeof node.focus === 'function') {
-            await node.focus();
+          else if (typeof (node as any).focus === 'function') {
+            await (node as any).focus();
             console.log("Node focused via node.focus");
           } else {
             console.warn("No selection or focus method available");
@@ -359,9 +360,9 @@ const App: React.FC = () => {
         
         // Try to center view on node
         try {
-          if (typeof (framer as any).zoomIntoView === 'function') {
-            await (framer as any).zoomIntoView(issue.location.nodeId);
-            console.log("Zoomed to node");
+          if (typeof framer.zoomIntoView === 'function') {
+            await framer.zoomIntoView(issue.location.nodeId);
+            console.log("Zoomed into node:", issue.location.nodeId);
           } else if (typeof (framer as any).centerOnNode === 'function') {
             await (framer as any).centerOnNode(node);
             console.log("Centered on node");
