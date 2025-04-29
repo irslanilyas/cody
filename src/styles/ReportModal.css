@@ -13,7 +13,7 @@
   }
   
   .modal-content {
-    background-color: var(--background-color);
+    background-color: var(--card-bg);
     border-radius: 8px;
     box-shadow: 0 4px 12px var(--shadow-color);
     width: 90%;
@@ -68,13 +68,13 @@
   .format-option {
     display: flex;
     flex-direction: column;
-    background-color: rgba(0, 0, 0, 0.02);
+    background-color: var(--background-secondary);
+  border: 1px solid var(--border-color);
     border-radius: 6px;
     padding: 12px;
     margin-bottom: 12px;
     cursor: pointer;
     position: relative;
-    border: 1px solid var(--border-color);
   }
   
   .format-option input[type="radio"] {
@@ -92,11 +92,11 @@
   .format-description {
     margin: 8px 0 0 28px;
     font-size: 14px;
-    color: var(--secondary-color);
+    color: var(--text-secondary-color);
   }
   
   .format-option:hover {
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: var(--hover-bg);
   }
   
   .modal-footer {
@@ -110,14 +110,14 @@
   .cancel-button {
     padding: 8px 16px;
     background: none;
-    border: 1px solid var(--border-color);
     border-radius: 4px;
-    color: var(--text-color);
     cursor: pointer;
+    border: 1px solid var(--border-color);
+  color: var(--text-color);
   }
   
   .cancel-button:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: var(--hover-bg);
   }
   
   .export-button {
