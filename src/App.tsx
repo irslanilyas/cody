@@ -9,6 +9,100 @@ import "./App.css";
 import "./styles/ReportModal.css";
 import "./types/framerTypes";
 
+// Add this component inside App.tsx, right before the usePermissions hook
+const IssueDetailView: React.FC<{
+  issue: Issue;
+  onClose: () => void;
+  onLocate: (issue: Issue) => void;
+}> = ({ issue, onClose, onLocate }) => {
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content issue-detail-modal">
+        <div className="modal-header">
+          <h3>{issue.title}</h3>
+          <button className="close-button" onClick={onClose}>×</button>
+        </div>
+        
+        <div className="modal-body">
+          <div className="issue-detail-section">
+            <div className="issue-location">
+              <strong>Element:</strong> {issue.location.nodeName}
+            </div>
+            
+            <div className="issue-description-full">
+              <p>{issue.description}</p>
+            </div>
+            
+            {issue.wcagGuideline && (
+              <div className="wcag-guideline-section">
+                <h4>WCAG Guideline:</h4>
+                <div className="wcag-guideline">
+                  <span>{issue.wcagGuideline}</span>
+                  {issue.wcagLink && (
+                    <a 
+                      href={issue.wcagLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="wcag-link"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 1.5H6.5C4.01472 1.5 2 3.51472 2 6V10C2 12.4853 4.01472 14.5 6.5 14.5H10.5C12.9853 14.5 15 12.4853 15 10V8.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        <path d="M7.5 8.5L14 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M14 6.5V2H9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {issue.fixSuggestions && issue.fixSuggestions.length > 0 && (
+              <div className="fix-suggestions-section">
+                <h4>Suggested Fixes:</h4>
+                <ul className="fix-suggestions-list">
+                  {issue.fixSuggestions.map((suggestion, index) => (
+                    <li key={index} className="fix-suggestion-item">
+                      <div className="fix-suggestion-content">
+                        <div className="bullet-point"></div>
+                        <span>{suggestion.description}</span>
+                      </div>
+                      <button 
+                        className="apply-fix-button"
+                        onClick={() => suggestion.action()}
+                      >
+                        Apply Fix
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="modal-footer">
+          <button 
+            className="locate-issue-button" 
+            onClick={() => {
+              onClose();
+              setTimeout(() => onLocate(issue), 100);
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 8.5C8.82843 8.5 9.5 7.82843 9.5 7C9.5 6.17157 8.82843 5.5 8 5.5C7.17157 5.5 6.5 6.17157 6.5 7C6.5 7.82843 7.17157 8.5 8 8.5Z" fill="white"/>
+              <path d="M8 14C10.5 11.5 13 9.36396 13 6.5C13 3.63604 10.7614 1.5 8 1.5C5.23858 1.5 3 3.63604 3 6.5C3 9.36396 5.5 11.5 8 14Z" stroke="white" strokeWidth="2"/>
+            </svg>
+            Locate Issue
+          </button>
+          <button className="close-details-button" onClick={onClose}>
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Custom hook to check for permissions
 function usePermissions() {
   const [canAccessNodes, setCanAccessNodes] = useState<boolean>(true);
@@ -38,7 +132,7 @@ function usePermissions() {
 }
 
 const App: React.FC = () => {
-  // State
+  // State declarations (keep only one set)
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [scanCompleted, setScanCompleted] = useState<boolean>(false);
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -54,7 +148,16 @@ const App: React.FC = () => {
   const [freeScanCount, setFreeScanCount] = useState<number>(2);
   const [totalScans] = useState<number>(3);
   const [activeTab, setActiveTab] = useState<string>("All");
-  
+  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const [expandedTypes, setExpandedTypes] = useState({
+    contrast: false,
+    touchTarget: false,
+    colorBlindness: false,
+    textSize: false,
+    altText: false,
+    navigation: false
+  });
+
   const canAccessNodes = usePermissions();
   
   const [filters, setFilters] = useState({
@@ -382,9 +485,7 @@ const App: React.FC = () => {
   
   // Handle show details
   const handleShowDetails = (issue: Issue) => {
-    // Implement the details view logic here
-    console.log("Show details for issue:", issue);
-    // This could open a modal or expand a details panel
+    setSelectedIssue(issue);
   };
 
   // Issue type components for the completed screen
@@ -430,15 +531,15 @@ const App: React.FC = () => {
 
     return (
       <div className="issue-type-container">
-        <div className="issue-type-header" onClick={toggleExpand}>
-          <div className="issue-type-info">
-            {icon}
-            <span className="issue-type-label">{label}</span>
-            {severityDot(mostSevereType)}
-            <span className="issue-count">{tabFilteredIssues.length} {tabFilteredIssues.length === 1 ? 'Issue' : 'Issues'}</span>
-          </div>
-          <button className="expand-button">
-            {isExpanded ? 'Collapse' : 'Expand'} 
+      <div className="issue-type-header" onClick={toggleExpand}>
+        <div className="issue-type-info">
+          {icon}
+          <span className="issue-type-label">{label}</span>
+          {severityDot(mostSevereType)}
+          <span className="issue-count">{tabFilteredIssues.length} {tabFilteredIssues.length === 1 ? 'Issue' : 'Issues'}</span>
+        </div>
+        <button className="expand-button">
+          {isExpanded ? 'Collapse' : 'Expand'} 
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d={isExpanded ? "M4 10L8 6L12 10" : "M4 6L8 10L12 6"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -446,34 +547,34 @@ const App: React.FC = () => {
         </div>
         
         {isExpanded && (
-          <div className="issue-type-content">
-            <p className="issue-type-description">
-              {getIssueTypeDescription(label)}
-            </p>
-            
-            {tabFilteredIssues.map((issue) => (
-              <div key={issue.id} className="issue-item-compact">
-                {severityDot(issue.severity)}
-                <div className="issue-info">
-                  <div className="issue-location">Element : {issue.location.nodeName}</div>
-                  <div className="issue-description">{issue.description}</div>
-                </div>
-                <div className="issue-actions">
-                  <button 
-                    className="locate-button-small"
-                    onClick={() => handleLocateIssue(issue)}
-                  >
+        <div className="issue-type-content">
+          <p className="issue-type-description">
+            {getIssueTypeDescription(label)}
+          </p>
+          
+          {tabFilteredIssues.map((issue) => (
+            <div key={issue.id} className="issue-item-compact">
+              {severityDot(issue.severity)}
+              <div className="issue-info">
+                <div className="issue-location">Element : {issue.location.nodeName}</div>
+                <div className="issue-description">{issue.description}</div>
+              </div>
+              <div className="issue-actions">
+                <button 
+                  className="locate-button-small"
+                  onClick={() => handleLocateIssue(issue)}
+                >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       {/* SVG path simplified */}
                       <path d="M8 8.5C8.82843 8.5 9.5 7.82843 9.5 7C9.5 6.17157 8.82843 5.5 8 5.5C7.17157 5.5 6.5 6.17157 6.5 7C6.5 7.82843 7.17157 8.5 8 8.5Z" fill="white"/>
                       <path d="M8 14C10.5 11.5 13 9.36396 13 6.5C13 3.63604 10.7614 1.5 8 1.5C5.23858 1.5 3 3.63604 3 6.5C3 9.36396 5.5 11.5 8 14Z" stroke="white" strokeWidth="2"/>
                     </svg>
                     Locate
-                  </button>
-                  <button 
-                    className="details-button"
-                    onClick={() => handleShowDetails(issue)}
-                  >
+                </button>
+                <button 
+                  className="details-button"
+                  onClick={() => handleShowDetails(issue)}
+                >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       {/* SVG path simplified */}
                       <path d="M8 12.5V8M8 5.5V5M1.5 8C1.5 4.41015 4.41015 1.5 8 1.5C11.5899 1.5 14.5 4.41015 14.5 8C14.5 11.5899 11.5899 14.5 8 14.5C4.41015 14.5 1.5 11.5899 1.5 8Z" stroke="black" strokeWidth="2" strokeLinecap="round"/>
@@ -489,21 +590,8 @@ const App: React.FC = () => {
     );
   };
 
-  // Issue type expanded state management
-  const [expandedTypes, setExpandedTypes] = useState<Record<string, boolean>>({
-    contrast: false,
-    touchTarget: false,
-    textSize: false,
-    altText: false,
-    colorBlindness: false,
-    navigation: false
-  });
-
-  const toggleExpand = (type: string) => {
-    setExpandedTypes(prev => ({
-      ...prev,
-      [type]: !prev[type]
-    }));
+  const toggleExpand = (type: keyof typeof expandedTypes) => {
+    setExpandedTypes(prev => ({...prev, [type]: !prev[type]}));
   };
 
   return (
@@ -629,8 +717,6 @@ const App: React.FC = () => {
               <button className="scan-button" onClick={handleScan}>
                 <span className="accessibility-icon">
                 <svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M5.95731 3.20796C5.64007 3.20796 5.32996 3.11388 5.06619 2.93764C4.80242 2.76139 4.59683 2.51088 4.47543 2.21779C4.35403 1.92471 4.32226 1.6022 4.38415 1.29106C4.44604 0.979917 4.59881 0.694115 4.82313 0.469795C5.04745 0.245475 5.33325 0.0927105 5.64439 0.0308207C5.95553 -0.0310691 6.27804 0.00069499 6.57113 0.122096C6.86422 0.243498 7.11472 0.449083 7.29097 0.712856C7.46722 0.976629 7.56129 1.28674 7.56129 1.60398C7.56083 2.02924 7.3917 2.43695 7.09099 2.73766C6.79029 3.03837 6.38257 3.2075 5.95731 3.20796Z" fill="white"/>
-<path d="M10.9984 3.23088L10.9855 3.23432L10.9735 3.23804C10.9449 3.24606 10.9162 3.25465 10.8876 3.26353C10.3545 3.41992 7.76755 4.14916 5.94503 4.14916C4.2514 4.14916 1.89842 3.51902 1.1457 3.30507C1.07078 3.27611 0.994277 3.25144 0.916559 3.23117C0.372352 3.08796 0 3.64075 0 4.14601C0 4.64639 0.449687 4.8847 0.90367 5.05569V5.06371L3.63101 5.91554C3.9097 6.02238 3.98417 6.1315 4.02054 6.22602C4.13884 6.52935 4.04432 7.12998 4.0108 7.33964L3.84468 8.62855L2.92268 13.6751C2.91981 13.6888 2.91723 13.7029 2.91494 13.7172L2.90836 13.7535C2.84191 14.2161 3.18161 14.665 3.82491 14.665C4.38631 14.665 4.63406 14.2774 4.74147 13.7501C4.84888 13.2228 5.54346 9.23692 5.94446 9.23692C6.34545 9.23692 7.1715 13.7501 7.1715 13.7501C7.27891 14.2774 7.52667 14.665 8.08806 14.665C8.73309 14.665 9.07279 14.2141 9.00462 13.7501C8.99877 13.7111 8.99151 13.6723 8.98285 13.6338L8.04825 8.62913L7.88241 7.34021C7.76239 6.5895 7.85892 6.34145 7.89157 6.28331C7.89246 6.28194 7.89322 6.28051 7.89386 6.27901C7.9248 6.22173 8.06572 6.09341 8.39453 5.96996L10.9517 5.07603C10.9674 5.07184 10.9829 5.06687 10.9981 5.06113C11.4564 4.88928 11.9147 4.65155 11.9147 4.14658C11.9147 3.64161 11.5426 3.08796 10.9984 3.23088Z" fill="white"/>
 <path d="M5.95731 3.20796C5.64007 3.20796 5.32996 3.11388 5.06619 2.93764C4.80242 2.76139 4.59683 2.51088 4.47543 2.21779C4.35403 1.92471 4.32226 1.6022 4.38415 1.29106C4.44604 0.979917 4.59881 0.694115 4.82313 0.469795C5.04745 0.245475 5.33325 0.0927105 5.64439 0.0308207C5.95553 -0.0310691 6.27804 0.00069499 6.57113 0.122096C6.86422 0.243498 7.11472 0.449083 7.29097 0.712856C7.46722 0.976629 7.56129 1.28674 7.56129 1.60398C7.56083 2.02924 7.3917 2.43695 7.09099 2.73766C6.79029 3.03837 6.38257 3.2075 5.95731 3.20796Z" fill="white"/>
 <path d="M10.9984 3.23088L10.9855 3.23432L10.9735 3.23804C10.9449 3.24606 10.9162 3.25465 10.8876 3.26353C10.3545 3.41992 7.76755 4.14916 5.94503 4.14916C4.2514 4.14916 1.89842 3.51902 1.1457 3.30507C1.07078 3.27611 0.994277 3.25144 0.916559 3.23117C0.372352 3.08796 0 3.64075 0 4.14601C0 4.64639 0.449687 4.8847 0.90367 5.05569V5.06371L3.63101 5.91554C3.9097 6.02238 3.98417 6.1315 4.02054 6.22602C4.13884 6.52935 4.04432 7.12998 4.0108 7.33964L3.84468 8.62855L2.92268 13.6751C2.91981 13.6888 2.91723 13.7029 2.91494 13.7172L2.90836 13.7535C2.84191 14.2161 3.18161 14.665 3.82491 14.665C4.38631 14.665 4.63406 14.2774 4.74147 13.7501C4.84888 13.2228 5.54346 9.23692 5.94446 9.23692C6.34545 9.23692 7.1715 13.7501 7.1715 13.7501C7.27891 14.2774 7.52667 14.665 8.08806 14.665C8.73309 14.665 9.07279 14.2141 9.00462 13.7501C8.99877 13.7111 8.99151 13.6723 8.98285 13.6338L8.04825 8.62913L7.88241 7.34021C7.76239 6.5895 7.85892 6.34145 7.89157 6.28331C7.89246 6.28194 7.89322 6.28051 7.89386 6.27901C7.9248 6.22173 8.06572 6.09341 8.39453 5.96996L10.9517 5.07603C10.9674 5.07184 10.9829 5.06687 10.9981 5.06113C11.4564 4.88928 11.9147 4.65155 11.9147 4.14658C11.9147 3.64161 11.5426 3.08796 10.9984 3.23088Z" fill="white"/>
 </svg>
@@ -801,6 +887,14 @@ const App: React.FC = () => {
         <ReportModal 
           issues={issues}
           onClose={() => setShowReportModal(false)}
+        />
+      )}
+      
+      {selectedIssue && (
+        <IssueDetailView
+          issue={selectedIssue}
+          onClose={() => setSelectedIssue(null)}
+          onLocate={handleLocateIssue}
         />
       )}
     </div>
