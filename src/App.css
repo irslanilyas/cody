@@ -951,6 +951,7 @@ body {
 
 .issue-item-compact {
   display: flex;
+  flex-direction: column;
   padding: 12px;
   border-radius: 4px;
   background-color: var(--background-tertiary);
@@ -959,7 +960,6 @@ body {
 }
 
 .issue-info {
-  flex: 1;
   margin-left: 8px;
 }
 
@@ -984,6 +984,7 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   padding: 6px 10px;
   background-color: #2196F3;
   color: white;
@@ -997,6 +998,7 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   padding: 6px 10px;
   background-color: var(--background-tertiary);
   color: var(--text-color);
