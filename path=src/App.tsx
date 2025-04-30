@@ -1,25 +1,14 @@
 import React, { useState } from 'react';
 
-const [expandedTypes, setExpandedTypes] = useState({
-  contrast: false,
-  touchTarget: false,
-  colorBlindness: false,
-  textSize: false,
-  altText: false,
-  navigation: false
-});
+const [expandedIssueIds, setExpandedIssueIds] = useState<Record<string, boolean>>({});
 
-const toggleExpand = (type: keyof typeof expandedTypes) => {
-  setExpandedTypes(prev => ({
+const toggleIssueDetails = (issueId: string) => {
+  setExpandedIssueIds(prev => ({
     ...prev,
-    [type]: !prev[type]
+    [issueId]: !prev[issueId]
   }));
 };
 
-{selectedIssue && (
-  <IssueDetailView
-    issue={selectedIssue}
-    onClose={() => setSelectedIssue(null)}
-    onLocate={handleLocateIssue}
-  />
-)} 
+const handleShowDetails = (issueId: string) => {
+  toggleIssueDetails(issueId);
+}; 
