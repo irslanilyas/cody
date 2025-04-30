@@ -122,7 +122,7 @@
   
   .export-button {
     padding: 8px 16px;
-    background-color: var(--success-color);
+    background-color: #33A7FF;
     border: none;
     border-radius: 4px;
     color: white;
@@ -131,7 +131,7 @@
   }
   
   .export-button:hover {
-    background-color: #157347;
+    background-color: #229fff;
   }
   
   .export-button:disabled,
