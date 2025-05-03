@@ -614,16 +614,17 @@ const App: React.FC = () => {
           <div className="welcome-container">
             
             
-            <div className="progress-bar-container">
+            
+            <div className="welcome-header">
+            <h1>Welcome to Accessibility Checker</h1>
+            <p>Analyse your framer project for accessibility issues</p>
+          </div>
+          <div className="progress-bar-container">
               <div 
                 className="progress-bar" 
                 style={{ width: `${scanProgress.totalPages > 0 ? Math.min(100, (scanProgress.currentPage / scanProgress.totalPages) * 100) : 0}%` }}
               ></div>
             </div>
-            <div className="welcome-header">
-            <h1>Welcome to Accessibility Checker</h1>
-            <p>Analyse your framer project for accessibility issues</p>
-          </div>
             <div className="scan-stats">
               <div className="stat-box">
                 <div className="stat-icon">
