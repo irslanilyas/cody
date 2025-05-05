@@ -8,6 +8,9 @@ import { runAccessibilityCheck } from "./analyzers/accessibilityScanner";
 import "./App.css";
 import "./styles/ReportModal.css";
 import "./types/framerTypes";
+import { isLicensed, getRemainingScans, recordScan } from './utils/licenseManager';
+import PremiumPrompt from './components/PremiumPrompt';
+
 
 // Add this component inside App.tsx, right before the usePermissions hook
 const IssueDetailView: React.FC<{
@@ -145,10 +148,11 @@ const App: React.FC = () => {
     issuesFound: 0
   });
   const [showReportModal, setShowReportModal] = useState(false);
-  const [freeScanCount, setFreeScanCount] = useState<number>(2);
+  const [freeScanCount, setFreeScanCount] = useState<number>(getRemainingScans());
   const [totalScans] = useState<number>(3);
   const [activeTab, setActiveTab] = useState<string>("All");
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const [showPremiumPrompt, setShowPremiumPrompt] = useState<boolean>(false);
   const [expandedTypes, setExpandedTypes] = useState({
     contrast: false,
     touchTarget: false,
@@ -339,16 +343,24 @@ const App: React.FC = () => {
       return;
     }
     
-    // Decrement scan count
-    if (freeScanCount > 0) {
-      setFreeScanCount(prev => prev - 1);
+    // Check if user has remaining scans or is licensed
+    if (getRemainingScans() <= 0 && !isLicensed()) {
+      setShowPremiumPrompt(true); // You'll need to add this state
+      return;
     }
     
+    // Record the scan for free users
+    recordScan();
+    
+    // Update the local state
+    setFreeScanCount(getRemainingScans());
+    
+    // Rest of your scan logic
     setError(null);
     setIsScanning(true);
     setScanCompleted(false);
-    setIssues([]); // Clear existing issues
-    setActiveTab("All"); // Reset to All tab
+    setIssues([]);
+    setActiveTab("All");
     
     try {
       // Set timeout to prevent infinite scanning
@@ -1029,6 +1041,18 @@ Show Details
           onClose={() => setSelectedIssue(null)}
           onLocate={handleLocateIssue}
         />
+      )}
+      
+      {showPremiumPrompt && (
+        <div className="modal-overlay">
+          <PremiumPrompt 
+            onClose={() => setShowPremiumPrompt(false)}
+            onLicenseActivated={() => {
+              setShowPremiumPrompt(false);
+              setFreeScanCount(getRemainingScans());
+            }}
+          />
+        </div>
       )}
     </div>
   );
