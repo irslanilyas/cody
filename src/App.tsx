@@ -692,54 +692,62 @@ const App: React.FC = () => {
       )}
       
       {!isScanning && scanCompleted && issues.length > 0 && (
-        <div className="scan-completed-section">
-          {/* First container: Scan completed and buttons */}
-          <div className="completed-container">
-            <div className="completed-header">
-              <h1>Scan Completed</h1>
-              
-              {/* Show empty state message when no issues match current tab */}
-              {activeTab !== "All" && filterIssuesByTab(issues, activeTab).length === 0 && (
-                <div className="empty-state" style={{ marginTop: "16px" }}>
-                  <h3 className="empty-state-title">No {activeTab} Issues Found</h3>
-                  <p className="empty-state-description">
-                    There are no {activeTab.toLowerCase()} level issues detected in your design.
-                    {activeTab === "Critical" && " That's great news for accessibility!"}
-                  </p>
-                </div>
-              )}
-              
-              {filterIssuesByTab(issues, activeTab).length > 0 && (
-                <p>Generate a report or click the scan button to scan again</p>
-              )}
-            </div>
-            
-            <div className="buttons-container">
-              <button className="scan-button" onClick={handleScan}>
-                <span className="accessibility-icon">
-                <svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M5.95731 3.20796C5.64007 3.20796 5.32996 3.11388 5.06619 2.93764C4.80242 2.76139 4.59683 2.51088 4.47543 2.21779C4.35403 1.92471 4.32226 1.6022 4.38415 1.29106C4.44604 0.979917 4.59881 0.694115 4.82313 0.469795C5.04745 0.245475 5.33325 0.0927105 5.64439 0.0308207C5.95553 -0.0310691 6.27804 0.00069499 6.57113 0.122096C6.86422 0.243498 7.11472 0.449083 7.29097 0.712856C7.46722 0.976629 7.56129 1.28674 7.56129 1.60398C7.56083 2.02924 7.3917 2.43695 7.09099 2.73766C6.79029 3.03837 6.38257 3.2075 5.95731 3.20796Z" fill="white"/>
-<path d="M10.9984 3.23088L10.9855 3.23432L10.9735 3.23804C10.9449 3.24606 10.9162 3.25465 10.8876 3.26353C10.3545 3.41992 7.76755 4.14916 5.94503 4.14916C4.2514 4.14916 1.89842 3.51902 1.1457 3.30507C1.07078 3.27611 0.994277 3.25144 0.916559 3.23117C0.372352 3.08796 0 3.64075 0 4.14601C0 4.64639 0.449687 4.8847 0.90367 5.05569V5.06371L3.63101 5.91554C3.9097 6.02238 3.98417 6.1315 4.02054 6.22602C4.13884 6.52935 4.04432 7.12998 4.0108 7.33964L3.84468 8.62855L2.92268 13.6751C2.91981 13.6888 2.91723 13.7029 2.91494 13.7172L2.90836 13.7535C2.84191 14.2161 3.18161 14.665 3.82491 14.665C4.38631 14.665 4.63406 14.2774 4.74147 13.7501C4.84888 13.2228 5.54346 9.23692 5.94446 9.23692C6.34545 9.23692 7.1715 13.7501 7.1715 13.7501C7.27891 14.2774 7.52667 14.665 8.08806 14.665C8.73309 14.665 9.07279 14.2141 9.00462 13.7501C8.99877 13.7111 8.99151 13.6723 8.98285 13.6338L8.04825 8.62913L7.88241 7.34021C7.76239 6.5895 7.85892 6.34145 7.89157 6.28331C7.89246 6.28194 7.89322 6.28051 7.89386 6.27901C7.9248 6.22173 8.06572 6.09341 8.39453 5.96996L10.9517 5.07603C10.9674 5.07184 10.9829 5.06687 10.9981 5.06113C11.4564 4.88928 11.9147 4.65155 11.9147 4.14658C11.9147 3.64161 11.5426 3.08796 10.9984 3.23088Z" fill="white"/>
-</svg>
-
-                </span>
-                <span className="scan-button-text">Scan again</span>
-              </button>
-              <button className="generate-report-button" onClick={handleGenerateReport}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
-
-
-                Generate Report
-              </button>
-            </div>
-            
+  <div className="scan-completed-section">
+    {/* First container: Scan completed text and buttons */}
+    <div className="scan-completed-header">
+      <div className="completed-header">
+        <h1>Scan Completed</h1>
+        
+        {/* Show empty state message when no issues match current tab */}
+        {activeTab !== "All" && filterIssuesByTab(issues, activeTab).length === 0 && (
+          <div className="empty-state" style={{ marginTop: "16px" }}>
+            <h3 className="empty-state-title">No {activeTab} Issues Found</h3>
+            <p className="empty-state-description">
+              There are no {activeTab.toLowerCase()} level issues detected in your design.
+              {activeTab === "Critical" && " That's great news for accessibility!"}
+            </p>
+          </div>
+        )}
+        
+        {filterIssuesByTab(issues, activeTab).length > 0 && (
+          <p>Generate a report or click the scan button to scan again</p>
+        )}
+      </div>
+      
+      <div className="buttons-container">
+        <button className="scan-button" onClick={handleScan}>
+          <span className="accessibility-icon">
+            <svg width="12" height="15" viewBox="0 0 12 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5.95731 3.20796C5.64007 3.20796 5.32996 3.11388 5.06619 2.93764C4.80242 2.76139 4.59683 2.51088 4.47543 2.21779C4.35403 1.92471 4.32226 1.6022 4.38415 1.29106C4.44604 0.979917 4.59881 0.694115 4.82313 0.469795C5.04745 0.245475 5.33325 0.0927105 5.64439 0.0308207C5.95553 -0.0310691 6.27804 0.00069499 6.57113 0.122096C6.86422 0.243498 7.11472 0.449083 7.29097 0.712856C7.46722 0.976629 7.56129 1.28674 7.56129 1.60398C7.56083 2.02924 7.3917 2.43695 7.09099 2.73766C6.79029 3.03837 6.38257 3.2075 5.95731 3.20796Z" fill="white"/>
+              <path d="M10.9984 3.23088L10.9855 3.23432L10.9735 3.23804C10.9449 3.24606 10.9162 3.25465 10.8876 3.26353C10.3545 3.41992 7.76755 4.14916 5.94503 4.14916C4.2514 4.14916 1.89842 3.51902 1.1457 3.30507C1.07078 3.27611 0.994277 3.25144 0.916559 3.23117C0.372352 3.08796 0 3.64075 0 4.14601C0 4.64639 0.449687 4.8847 0.90367 5.05569V5.06371L3.63101 5.91554C3.9097 6.02238 3.98417 6.1315 4.02054 6.22602C4.13884 6.52935 4.04432 7.12998 4.0108 7.33964L3.84468 8.62855L2.92268 13.6751C2.91981 13.6888 2.91723 13.7029 2.91494 13.7172L2.90836 13.7535C2.84191 14.2161 3.18161 14.665 3.82491 14.665C4.38631 14.665 4.63406 14.2774 4.74147 13.7501C4.84888 13.2228 5.54346 9.23692 5.94446 9.23692C6.34545 9.23692 7.1715 13.7501 7.1715 13.7501C7.27891 14.2774 7.52667 14.665 8.08806 14.665C8.73309 14.665 9.07279 14.2141 9.00462 13.7501C8.99877 13.7111 8.99151 13.6723 8.98285 13.6338L8.04825 8.62913L7.88241 7.34021C7.76239 6.5895 7.85892 6.34145 7.89157 6.28331C7.89246 6.28194 7.89322 6.28051 7.89386 6.27901C7.9248 6.22173 8.06572 6.09341 8.39453 5.96996L10.9517 5.07603C10.9674 5.07184 10.9829 5.06687 10.9981 5.06113C11.4564 4.88928 11.9147 4.65155 11.9147 4.14658C11.9147 3.64161 11.5426 3.08796 10.9984 3.23088Z" fill="white"/>
+            </svg>
+          </span>
+          <span className="scan-button-text">Scan again</span>
+        </button>
+        <button className="generate-report-button" onClick={handleGenerateReport}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <path d="M12 11h4"/>
+            <path d="M12 16h4"/>
+            <path d="M8 11h.01"/>
+            <path d="M8 16h.01"/>
+          </svg>
+          Generate Report
+        </button>
+      </div>
+    </div>
+    
+      <div className="second-container">
             {/* Stats boxes showing issue counts by severity */}
             <div className="severity-stats">
               <div className="severity-box critical" onClick={() => setActiveTab(activeTab === "Critical" ? "All" : "Critical")}>
                 <div className="severity-icon">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="6" cy="6" r="6" fill="#E53935"/>
-                  </svg>
+                <svg width="21" height="22" viewBox="0 0 21 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="0.117188" y="0.738525" width="20.5086" height="20.57" rx="10.2543" fill="#FEE2E2"/>
+<path d="M10.3715 13.6459C10.5201 13.6459 10.6447 13.5956 10.7454 13.4949C10.8461 13.3942 10.8963 13.2697 10.8959 13.1214C10.8956 12.9732 10.8452 12.8487 10.7449 12.748C10.6445 12.6473 10.5201 12.5969 10.3715 12.5969C10.2228 12.5969 10.0984 12.6473 9.99802 12.748C9.89767 12.8487 9.84731 12.9732 9.84696 13.1214C9.84661 13.2697 9.89697 13.3943 9.99802 13.4954C10.0991 13.5964 10.2235 13.6466 10.3715 13.6459ZM9.84696 11.548H10.8959V8.40106H9.84696V11.548ZM10.3715 16.2684C9.64591 16.2684 8.96408 16.1306 8.32595 15.8551C7.68783 15.5795 7.13275 15.2059 6.66071 14.7342C6.18867 14.2625 5.81506 13.7075 5.53988 13.069C5.2647 12.4305 5.12694 11.7487 5.12659 11.0235C5.12624 10.2983 5.264 9.61647 5.53988 8.97799C5.81576 8.33952 6.18937 7.78444 6.66071 7.31275C7.13205 6.84106 7.68713 6.46745 8.32595 6.19192C8.96478 5.91639 9.64661 5.77863 10.3715 5.77863C11.0963 5.77863 11.7781 5.91639 12.4169 6.19192C13.0558 6.46745 13.6109 6.84106 14.0822 7.31275C14.5535 7.78444 14.9273 8.33952 15.2035 8.97799C15.4798 9.61647 15.6174 10.2983 15.6163 11.0235C15.6153 11.7487 15.4775 12.4305 15.203 13.069C14.9285 13.7075 14.5549 14.2625 14.0822 14.7342C13.6095 15.2059 13.0544 15.5797 12.4169 15.8556C11.7795 16.1315 11.0977 16.2691 10.3715 16.2684Z" fill="#DC2626"/>
+</svg>
+
                 </div>
                 <div className="severity-label">Critical</div>
                 <div className="severity-count">{criticalCount}</div>
@@ -747,9 +755,11 @@ const App: React.FC = () => {
               
               <div className="severity-box warning" onClick={() => setActiveTab(activeTab === "Warnings" ? "All" : "Warnings")}>
                 <div className="severity-icon">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    {/* SVG content simplified */}
-                  </svg>
+                <svg width="21" height="22" viewBox="0 0 21 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="0.117188" y="0.738525" width="20.5086" height="20.57" rx="10.2543" fill="#FFEDD5"/>
+<path d="M9.4506 7.23911C9.85104 6.51494 10.8919 6.51494 11.2924 7.23911L14.916 13.7889C15.3043 14.4906 14.7967 15.3513 13.9949 15.3513H6.74855C5.94626 15.3513 5.43869 14.4906 5.82697 13.7889L9.4506 7.23911ZM10.8386 13.4801C10.8406 13.4175 10.8299 13.3552 10.8074 13.2968C10.7848 13.2384 10.7507 13.1851 10.7071 13.1401C10.6635 13.0952 10.6114 13.0594 10.5537 13.035C10.4961 13.0106 10.4341 12.998 10.3715 12.998C10.3089 12.998 10.2469 13.0106 10.1892 13.035C10.1316 13.0594 10.0794 13.0952 10.0358 13.1401C9.99226 13.1851 9.95817 13.2384 9.93559 13.2968C9.91301 13.3552 9.90239 13.4175 9.90437 13.4801C9.90821 13.6014 9.95911 13.7165 10.0463 13.801C10.1335 13.8854 10.2501 13.9327 10.3715 13.9327C10.4929 13.9327 10.6095 13.8854 10.6967 13.801C10.7838 13.7165 10.8347 13.6014 10.8386 13.4801ZM10.7174 9.80643C10.7053 9.71833 10.6602 9.63811 10.5912 9.58201C10.5222 9.52591 10.4344 9.49811 10.3457 9.50423C10.257 9.51035 10.1739 9.54994 10.1132 9.61498C10.0526 9.68003 10.0189 9.76568 10.019 9.85461L10.0209 11.9602L10.0241 12.0079C10.0363 12.096 10.0814 12.1762 10.1504 12.2323C10.2194 12.2884 10.3071 12.3163 10.3959 12.3101C10.4846 12.304 10.5677 12.2644 10.6283 12.1994C10.689 12.1343 10.7227 12.0487 10.7226 11.9597L10.7207 9.85368L10.7174 9.80643Z" fill="#EA580C"/>
+</svg>
+
                 </div>
                 <div className="severity-label">Warnings</div>
                 <div className="severity-count">{warningCount}</div>
@@ -757,16 +767,18 @@ const App: React.FC = () => {
               
               <div className="severity-box info" onClick={() => setActiveTab(activeTab === "Info" ? "All" : "Info")}>
                 <div className="severity-icon">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="6" cy="6" r="6" fill="#2196F3"/>
-                  </svg>
+                <svg width="21" height="22" viewBox="0 0 21 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="0.117188" y="0.738525" width="20.5086" height="20.57" rx="10.2543" fill="#FEF9C3"/>
+<path d="M9.84708 13.6461H10.8961V10.4991H9.84708V13.6461ZM10.3716 9.45012C10.5202 9.45012 10.6448 9.39977 10.7456 9.29907C10.8463 9.19836 10.8964 9.07388 10.8961 8.92562C10.8957 8.77736 10.8454 8.65288 10.745 8.55218C10.6447 8.45148 10.5202 8.40112 10.3716 8.40112C10.223 8.40112 10.0985 8.45148 9.99814 8.55218C9.89779 8.65288 9.84743 8.77736 9.84708 8.92562C9.84673 9.07388 9.89709 9.19854 9.99814 9.29959C10.0992 9.40065 10.2237 9.45082 10.3716 9.45012ZM10.3716 16.2686C9.64603 16.2686 8.96418 16.1308 8.32604 15.8553C7.68789 15.5798 7.1328 15.2062 6.66075 14.7345C6.1887 14.2628 5.81508 13.7077 5.53989 13.0692C5.26471 12.4307 5.12694 11.7488 5.12659 11.0236C5.12624 10.2984 5.26401 9.61656 5.53989 8.97807C5.81578 8.33958 6.1894 7.78449 6.66075 7.31279C7.1321 6.84109 7.6872 6.46747 8.32604 6.19193C8.96488 5.91639 9.64673 5.77863 10.3716 5.77863C11.0964 5.77863 11.7783 5.91639 12.4171 6.19193C13.056 6.46747 13.6111 6.84109 14.0824 7.31279C14.5538 7.78449 14.9276 8.33958 15.2038 8.97807C15.48 9.61656 15.6176 10.2984 15.6166 11.0236C15.6155 11.7488 15.4778 12.4307 15.2033 13.0692C14.9288 13.7077 14.5552 14.2628 14.0824 14.7345C13.6097 15.2062 13.0546 15.58 12.4171 15.8558C11.7797 16.1317 11.0978 16.2693 10.3716 16.2686Z" fill="#EAB308"/>
+</svg>
+
                 </div>
                 <div className="severity-label">Info</div>
                 <div className="severity-count">{infoCount}</div>
               </div>
             </div>
           </div>
-          
+         
           {/* Tabs for filtering by severity */}
           <div className="filter-tabs-container">
             <div className="filter-tabs">
