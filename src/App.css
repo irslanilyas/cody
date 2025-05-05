@@ -3,6 +3,7 @@
   --stat-box-color: #F3F3F3;
   --background-secondary: #F8F8F8;
   --background-tertiary: #F3F3F3;
+  --details-expanded: #FFFFFF;
   --text-color: #000000;
   --text-secondary-color: #6c757d;
   --expand-section: #FFFFFF;
@@ -25,6 +26,7 @@
 [data-framer-theme="dark"] {
   --background-color: #111111;
   --stat-box-color: #555555;
+  --details-expanded: #2B2B2B;
   --background-secondary: #2B2B2B;
   --background-tertiary: #2B2B2B;
   --text-color: #ffffff;
@@ -482,22 +484,6 @@ body {
   font-size: 13px;
 }
 
-/* Action buttons */
-.fix-button, .info-button, .expand-button, .locate-button {
-  padding: 6px 12px;
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.fix-button:hover, .expand-button:hover, .locate-button:hover {
-  background-color: #ececec;
-}
-
 /* Empty state and loading */
 .empty-state {
   display: flex;
@@ -540,43 +526,7 @@ body {
 }
 
 /* Scan progress */
-.scan-progress {
-  background-color: var(--background-tertiary);
-  border-radius: 6px;
-  box-shadow: 0 2px 4px var(--shadow-color);
-  border: 1px solid var(--border-color);
-  padding: 16px;
-  margin-bottom: 16px;
-}
 
-.progress-bar-container {
-  width: 100%;
-  height: 8px;
-  background-color: #e9ecef;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-
-.progress-bar-container {
-  width: 100%;
-  height: 8px;
-  background-color: #e9ecef;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-
-.progress-bar {
-  height: 100%;
-  background-color: #2196F3;
-  transition: width 0.3s ease;
-}
-
-.progress-stats {
-  display: flex;
-  justify-content: space-between;
-}
 
 .progress-stat {
   display: flex;
@@ -701,7 +651,7 @@ body {
 .progress-bar-container {
   width: 100%;
   height: 12px;
-  background-color: var(--border-color);
+  background-color: var(--hover-bg);
   border-radius: 4px;
   overflow: hidden;
   margin: 14px 0;
@@ -709,25 +659,33 @@ body {
 
 .progress-bar {
   height: 100%;
+  border-radius: 5px;
   background-color: #2196F3;
   transition: width 0.3s ease;
 }
 
-.loading-spinner {
-  display: inline-block;
-  width: 50px;
-  height: 50px;
-  border: 3px solid rgba(33, 150, 243, 0.3);
-  border-radius: 50%;
-  border-top-color: #2196F3;
-  animation: spin 1s ease-in-out infinite;
+.loader {
+  position: relative;
+  width: 70px;
+  height: 65px;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+.loader:before , .loader:after{
+  content: '';
+  border-radius: 50%;
+  position: absolute;
+  inset: 0;
 }
+.loader:after {
+  box-shadow: 0 2px 0 #33A7FF inset;
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  0% {  transform: rotate(0)}
+  100% { transform: rotate(360deg)}
+}
+
 
 /* Scan completed screen styles */
 .scan-completed-section {
@@ -897,8 +855,7 @@ body {
 }
 
 .issue-type-label {
-  font-weight: 500;
-  margin-left: px;
+  font-weight: 600;
 }
 
 .severity-dot {
@@ -954,7 +911,7 @@ body {
 .issue-item-compact {
   display: flex;
   flex-direction: column;
-  padding: 12px;
+  padding: 8px;
   border-radius: 4px;
   background-color: var(--expand-section);
   margin-bottom: 8px;
@@ -966,8 +923,10 @@ body {
 }
 
 .issue-location {
-  font-weight: 500;
+  background-color: transparent;
+  font-weight: 600;
   font-size: 14px;
+  color: var(--text-color);
   margin-bottom: 4px;
   
   
@@ -987,14 +946,15 @@ body {
 .locate-button-small {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  padding: 6px 10px;
+  padding: 8px 12px;
   background-color: #2196F3;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
 }
 
@@ -1004,11 +964,11 @@ body {
   gap: 4px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   padding: 6px 10px;
-  background-color: var(--background-tertiary);
-  color: var(--text-color);
+  background-color: #F8F8F8;
   border: none;
   border-radius: 4px;
   font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
 }
 .fix-button:hover, 
@@ -1020,3 +980,94 @@ body {
 .svg-path {
   fill: var(--text-color);
 }
+
+.issue-item-wrapper {
+  margin-bottom: 8px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.issue-expanded-details {
+  background-color: var(--expand-section);
+  padding: 4px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.details-box {
+  background-color: var(--details-expanded);
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.details-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.details-box-header h4 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.details-box-content p {
+  margin: 0;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.fix-suggestions-list {
+  padding-left: 0;
+  margin: 0;
+  list-style-type: none;
+}
+
+.fix-suggestion-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.bullet-point {
+  width: 6px;
+  height: 6px;
+  background-color: var(--text-color);
+  border-radius: 50%;
+  margin-right: 8px;
+  margin-top: 7px;
+}
+
+.expanded-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.expanded-actions button {
+  padding: 8px 12px;
+}
+
+.hide-details-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  padding: 6px 10px;
+  background-color: #F8F8F8;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+ 
+}
+
+.hide-details-button:hover {
+  background-color: #ddd;
+}
+
