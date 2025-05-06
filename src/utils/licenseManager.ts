@@ -98,8 +98,20 @@ export async function validateLicenseWithLemonSqueezy(licenseKey: string): Promi
     const data = await response.json();
     console.log("Lemon Squeezy API response:", data);
     
+    // Check if the response contains the expected product ID
     if (data && data.activated) {
-      return { valid: true };
+      // Verify this license belongs to our product
+      if (data.license && data.license.product_id && 
+          data.license.product_id.toString() === PRODUCT_ID.toString()) {
+        return { valid: true };
+      } else {
+        console.warn("License is valid but for a different product:", 
+                    data.license?.product_id, "Expected:", PRODUCT_ID);
+        return { 
+          valid: false, 
+          message: 'This license key is for a different product'
+        };
+      }
     } else {
       return { valid: false, message: data.error || 'Invalid license key' };
     }
