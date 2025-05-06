@@ -1054,6 +1054,62 @@ Show Details
           />
         </div>
       )}
+<div 
+  style={{
+    position: 'fixed',
+    bottom: '10px',
+    right: '10px',
+    zIndex: 9999,
+    opacity: 0.7,
+    padding: '8px',
+    backgroundColor: '#f0f0f0',
+    borderRadius: '4px',
+    fontSize: '12px',
+    cursor: 'pointer',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center'
+  }}
+>
+  <button
+    style={{
+      padding: '4px 8px',
+      backgroundColor: '#e0e0e0',
+      border: '1px solid #ccc',
+      borderRadius: '3px',
+      cursor: 'pointer',
+      marginBottom: '4px'
+    }}
+    onClick={() => {
+      try {
+        // Clear all license-related localStorage items
+        localStorage.removeItem('licenseKey');
+        localStorage.removeItem('usedScans');
+        localStorage.removeItem('accessibilityCheckerInstanceId');
+        
+        // Provide visual feedback that reset occurred
+        alert('License state reset successfully. The page will reload.');
+        
+        // Add a short delay before reload to ensure localStorage changes are applied
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
+      } catch (error) {
+        console.error('Error resetting license state:', error);
+        alert('Error resetting license state: ' + error);
+      }
+    }}
+  >
+    Dev Reset
+  </button>
+  
+  {/* Add license state indicator for debugging */}
+  <div style={{ fontSize: '10px', marginTop: '2px' }}>
+    <div>Scans: {freeScanCount}/{totalScans}</div>
+    <div>Licensed: {isLicensed() ? 'Yes' : 'No'}</div>
+  </div>
+</div>
     </div>
   );
 };

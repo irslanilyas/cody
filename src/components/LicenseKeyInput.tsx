@@ -1,39 +1,65 @@
 // components/LicenseKeyInput.tsx
 import React, { useState } from 'react';
-import { setLicenseKey } from '../utils/licenseManager';
+import { activateLicense } from '../utils/licenseManager';
 
-// Define props interface
 interface LicenseKeyInputProps {
-  onActivated?: () => void;
+  onActivated: () => void;
 }
 
 const LicenseKeyInput: React.FC<LicenseKeyInputProps> = ({ onActivated }) => {
-  const [key, setKey] = useState('');
-  const [message, setMessage] = useState('');
+  const [licenseKey, setLicenseKey] = useState('');
+  const [isActivating, setIsActivating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  const handleActivate = () => {
-    if (setLicenseKey(key)) {
-      setMessage('License activated successfully!');
-      // Call the callback if provided
-      if (onActivated) {
+  const handleActivation = async () => {
+    if (!licenseKey.trim()) {
+      setError('Please enter a license key');
+      return;
+    }
+    
+    setIsActivating(true);
+    setError(null);
+    
+    try {
+      const result = await activateLicense(licenseKey.trim());
+      
+      if (result.success) {
+        // Call the callback to inform parent component
         onActivated();
+      } else {
+        setError(result.message || 'Invalid license key');
       }
-    } else {
-      setMessage('Invalid license key');
+    } catch (err) {
+      setError('Error activating license');
+      console.error('License activation error:', err);
+    } finally {
+      setIsActivating(false);
     }
   };
   
   return (
-    <div className="license-key-container">
-      <h3>Enter License Key</h3>
-      <input 
-        type="text" 
-        value={key} 
-        onChange={(e) => setKey(e.target.value)}
-        placeholder="XXXX-XXXX-XXXX-XXXX"
-      />
-      <button onClick={handleActivate}>Activate</button>
-      {message && <p className="message">{message}</p>}
+    <div className="license-key-input">
+      <h3>Enter Your License Key</h3>
+      
+      <div className="input-group">
+        <input
+          type="text"
+          value={licenseKey}
+          onChange={(e) => setLicenseKey(e.target.value)}
+          placeholder="Enter your license key"
+          disabled={isActivating}
+        />
+        
+        <button 
+          className="activate-button"
+          onClick={handleActivation}
+          disabled={isActivating}
+        >
+          {isActivating ? 'Activating...' : 'Activate'}
+        </button>
+      </div>
+      
+      {error && <div className="error-message">{error}</div>}
     </div>
   );
 };
